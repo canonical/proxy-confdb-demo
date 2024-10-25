@@ -44,9 +44,10 @@ $ snap install browser_0.1_amd64.snap --dangerous
 
 ## Registries
 
-```
+```console
 $ snap connect proxy-custodian:proxy-control
 $ sudo proxy-custodian.sh -c 'snapctl set --view :proxy-control https.url=https://127.0.0.1'
+$ sudo snap set f22PSauKuNkwQTM9Wz67ZCjNACuSjjhN/proxy/control-proxy 'https.bypass=["localhost","127.0.0.1"]'
 
 $ proxy-custodian.sh -c 'snapctl get --view :proxy-control https'
 ```
