@@ -1,0 +1,5 @@
+#!/bin/sh
+
+exec /bin/sh "$@"#!/bin/sh
+
+exec /bin/sh "$@"
