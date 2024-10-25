@@ -9,8 +9,8 @@ To get the current timestamp, run `date -Iseconds --utc`.
 #### Sign & Acknowledge
 
 ```console
-$ snap sign -k <key-name> proxy-registry.json > proxy-registry.assert
-$ snap ack proxy-registry.assert
+$ snap sign -k <key-name> network-registry.json > network-registry.assert
+$ snap ack network-registry.assert
 ```
 
 ##### "cannot resolve prerequisite assertion"
@@ -67,9 +67,9 @@ registry   browser:proxy-observe  :registry  manual
 
 $ sudo net-ctrl.sh -c 'snapctl set --view :proxy-control https.url=http://proxy.example.com'
 $ sudo net-ctrl.sh -c 'snapctl set --view :proxy-control ftp.url=ftp://proxy.example.com'
-$ sudo snap set f22PSauKuNkwQTM9Wz67ZCjNACuSjjhN/proxy/control-proxy 'https.bypass=["https://127.0.0.1", "https://localhost"]'
+$ sudo snap set f22PSauKuNkwQTM9Wz67ZCjNACuSjjhN/network/control-proxy 'https.bypass=["https://127.0.0.1", "https://localhost"]'
 
-$ net-ctrl.sh -c 'snapctl get --view :proxy-control https'
+$ net-ctrl.sh -c 'snapctl get --view :proxy-control'
 {
     "ftp": {
         "url": "ftp://proxy.example.com"

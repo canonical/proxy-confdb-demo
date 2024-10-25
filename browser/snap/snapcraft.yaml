@@ -11,7 +11,7 @@ plugs:
   proxy-observe:
     interface: registry
     account: f22PSauKuNkwQTM9Wz67ZCjNACuSjjhN
-    view: proxy/observe-proxy
+    view: network/observe-proxy
 
 parts:
   browser:
