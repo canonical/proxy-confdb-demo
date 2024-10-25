@@ -8,16 +8,18 @@ from connect.utils.terminal.markdown import render
 
 
 def get_proxy_config():
-    config = {}
-    for protocol in ["http", "https"]:
-        cmd = f"snapctl get --view :proxy-observe {protocol} -d"
+    cmd = f"snapctl get --view :proxy-observe -d"
+    proc = subprocess.run(cmd.split(), capture_output=True, text=True)
+    if proc.returncode != 0:
+        raise RuntimeError(proc.stderr)
 
-        proc = subprocess.run(cmd.split(), capture_output=True, text=True)
-
-        if proc.returncode != 0:
-            continue
-
-        config.update(json.loads(proc.stdout))
+    config = json.loads(proc.stdout)
+    unknown = [
+        protocol for protocol in config.keys()
+        if protocol not in ("http", "https")
+    ]
+    for protocol in unknown:
+        config.pop(protocol)
 
     return config
 
