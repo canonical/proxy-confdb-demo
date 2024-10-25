@@ -8,7 +8,7 @@ from connect.utils.terminal.markdown import render
 
 
 def get_proxies():
-    cmd = "snapctl get --view :proxy-observe https -d"
+    cmd = "snapctl get --view :proxy-observe https"
     proc = subprocess.run(cmd.split(), capture_output=True, text=True)
 
     if proc.returncode != 0:

@@ -1,4 +1,4 @@
-name: proxy-custodian
+name: net-ctrl
 base: core24
 version: "0.1"
 summary: The custodian of the proxy registry.
@@ -15,7 +15,7 @@ plugs:
     role: custodian
 
 parts:
-  proxy-custodian:
+  net-ctrl:
     plugin: dump
     source: .
 
