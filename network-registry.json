@@ -8,7 +8,7 @@
             "rules": [
                 {
                     "request": "{protocol}",
-                    "storage": "config.{protocol}",
+                    "storage": "proxy.{protocol}",
                     "content": [
                         {
                             "request": "url",
@@ -27,17 +27,17 @@
             "rules": [
                 {
                     "request": "https",
-                    "storage": "config.https",
+                    "storage": "proxy.https",
                     "access": "read"
                 },
                 {
                     "request": "ftp",
-                    "storage": "config.ftp",
+                    "storage": "proxy.ftp",
                     "access": "read"
                 }
             ]
         }
     },
-    "body": "{\n  \"storage\": {\n    \"aliases\": {\n      \"protocol\": {\n        \"choices\": [\n          \"http\",\n          \"https\",\n          \"ftp\"\n        ],\n        \"type\": \"string\"\n      }\n    },\n    \"schema\": {\n      \"config\": {\n        \"keys\": \"$protocol\",\n        \"values\": {\n          \"schema\": {\n            \"bypass\": {\n              \"type\": \"array\",\n              \"unique\": true,\n              \"values\": \"string\"\n            },\n            \"url\": \"string\"\n          }\n        }\n      }\n    }\n  }\n}",
+    "body": "{\n  \"storage\": {\n    \"aliases\": {\n      \"protocol\": {\n        \"choices\": [\n          \"http\",\n          \"https\",\n          \"ftp\"\n        ],\n        \"type\": \"string\"\n      }\n    },\n    \"schema\": {\n      \"proxy\": {\n        \"keys\": \"$protocol\",\n        \"values\": {\n          \"schema\": {\n            \"bypass\": {\n              \"type\": \"array\",\n              \"unique\": true,\n              \"values\": \"string\"\n            },\n            \"url\": \"string\"\n          }\n        }\n      }\n    }\n  }\n}",
     "timestamp": "2024-10-25T13:31:20+00:00"
 }
