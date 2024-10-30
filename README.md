@@ -4,15 +4,15 @@
 
 Registries provide a new mechanism for configuring snaps in the snappy ecosystem.
 
-For this demo, we'll set up a registry to share proxy configuration between snaps.
+For this demo, we'll set up a `network` registry to share proxy configuration between snaps.
 
 ## The Past
 
-Traditionally, snap configuration has been tightly coupled to individual snaps, making it difficult to share configuration across snaps. In this example, each of the snaps (firefox, chromium, & brave) each have their own proxy config set through `snap set` which leads to a lot of duplication.
+Traditionally, snap configuration has been tightly coupled to individual snaps, making it difficult to share configuration between snaps. In this example, each of the snaps (firefox, chromium, & brave) have their own proxy config set through `snap set` which leads to a lot of duplication.
 
 ![setup](docs/media/setup.png)
 
-We'll look at several workarounds to get around this and how registries can fix this.
+We'll look at several (somewhat hacky) workarounds to get around this and how registries can fix this.
 
 ### _content_ interface
 
@@ -22,7 +22,7 @@ In this scenario, we'll create an additional snap (`net-ctrl`) that will store t
 
 ### _snapd-control_ interface
 
-In this scenario, we also have an additional snap (`net-ctrl`) that we set snap configi on. The other snaps then connect to the `snapd-control` and consume this configuration through snapd API endpoint [`/v2/snaps/net-ctrl/conf`](https://snapcraft.io/docs/snapd-api#heading--snaps-name-conf). This is a BAD solution as it effectively grants these snaps `root` access to your device which isn't safe.
+In this scenario, we also have an additional snap (`net-ctrl`) that we set snap config on (with `snap set`). The other snaps then connect to the [snapd-control](https://snapcraft.io/docs/snapd-control-interface) and consume this configuration through the snapd API endpoint [`/v2/snaps/net-ctrl/conf`](https://snapcraft.io/docs/snapd-api#heading--snaps-name-conf). This is a BAD solution as it effectively grants these snaps `root` access to your device which isn't safe.
 
 ![snapd-control interface](docs/media/with-snapd-control.png)
 
@@ -69,7 +69,7 @@ timestamp: <date -Iseconds --utc>
 
 Snaps do not act on the the raw configuration in the storage directly. This is mediated by registry views which allows the views & storage to evolve independently.
 
-We'll create two views: `control-proxy` and `observe-proxy`. `control-proxy` allows for `read-write` access but `observe-proxy` only allows `read` access. This is a naming convention in registries.
+We'll create two views: `control-proxy` and `observe-proxy`. `control-proxy` allows for `read-write` access but `observe-proxy` only allows `read` access. This is the naming convention in registries.
 
 ```yaml
 views:
@@ -99,6 +99,40 @@ views:
 ```
 
 Each view has a set of rules that hold the `request` path, the underlying `storage`, and the `access` method. You can use placeholders in the `request` and `storage`. In the example above, `{protocol}` is a placeholder which maps to `proxy.{protocol}`. For instance, `https` -> `proxy.https`.
+
+The stored config respects the following schema:
+
+```json
+{
+  "storage": {
+    "aliases": {
+      "protocol": {
+        "choices": [
+          "http",
+          "https",
+          "ftp"
+        ],
+        "type": "string"
+      }
+    },
+    "schema": {
+      "proxy": {
+        "keys": "$protocol",
+        "values": {
+          "schema": {
+            "bypass": {
+              "type": "array",
+              "unique": true,
+              "values": "string"
+            },
+            "url": "string"
+          }
+        }
+      }
+    }
+  }
+}
+```
 
 In a diagram, this setup looks like this:
 
@@ -136,11 +170,11 @@ The registries feature is currently behind an experimental flag & you need to ru
 
 You can create a registry assertion "by hand" where you sign it itself or you can use `snapcraft` which launches an editor to type the assertion in, then it signs the assertion & uploads it to the Store (see [this addendum](#creating-a-registry-assertion-with-snapcraft)).
 
-Create a `network-registry.json` file and put your assertion there. Please note that the `body` must be in a very specific format so run your json through `jq` like so: `echo '{...}' | jq -S | jq -sR`.
+Create a `network-registry.json` file and put your assertion there. Please note that the `body` must be in a _very specific_ format so run your json through `jq` like so: `echo '{...}' | jq -S | jq -sR`.
 
 #### Sign & Acknowledge
 
-Next, we'll sign the "json assertion", save it in a `.assert` file, and acknowledge it.
+Next, we'll sign the assertion, save the signed version in a `.assert` file, and finally acknowledge it.
 
 ```console
 $ snap sign -k <key-name> network-registry.json > network-registry.assert
@@ -283,7 +317,7 @@ Please note that using `snap set` with registries doesn't seem to run the hooks.
 
 ### browser/proxy-observe-view-changed (`<plug>-view-changed`)
 
-This hook allows the browser snap to watch for changes to the `observe` proxy view.It outputs the new config to `$SNAP_COMMON/new-config.json`.
+This hook allows the browser snap to watch for changes to the `observe` proxy view. It outputs the new config to `$SNAP_COMMON/new-config.json`.
 
 ```console
 $ sudo net-ctrl.sh -c 'snapctl set --view :proxy-control https.url="http://localhost:3199/"'
@@ -291,7 +325,7 @@ $ snap changes
 ID   Status  Spawn                     Ready                     Summary
 [...]
 765  Done    today at 15:36 CET        today at 15:36 CET        Modify registry "f22PSauKuNkwQTM9Wz67ZCjNACuSjjhN/network"
-$ snap tasks 692
+$ snap tasks 765
 Status  Spawn               Ready               Summary
 Done    today at 15:36 CET  today at 15:36 CET  Clears the ongoing registry transaction from state (on error)
 Done    today at 15:36 CET  today at 15:36 CET  Run hook change-view-proxy-control of snap "net-ctrl"
@@ -323,7 +357,7 @@ This hook:
 1. Validates the `{protocol}.url` (data validation), and
 2. Ensures that internal company URLs are never proxied (data decoration).
 
-**1**
+#### Example 1
 
 ```console
 $ sudo net-ctrl.sh -c 'snapctl set --view :proxy-control https.url="not a url?"'
@@ -345,7 +379,7 @@ Run hook change-view-proxy-control of snap "net-ctrl"
 2024-10-30T17:38:59+03:00 ERROR run hook "change-view-proxy-control": failed to validate url: not a url?
 ```
 
-**2**
+#### Example 2
 
 ```console
 $ sudo snap run --shell net-ctrl.sh
