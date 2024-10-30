@@ -1,4 +1,4 @@
-# Registries* Demo
+# A Registries* Demo
 
 > *registries might be renamed
 
@@ -252,3 +252,27 @@ $ cat /var/snap/browser/common/view-changed-proxy-observe
     }
 }
 ```
+
+### net-ctrl/change-view-proxy-control
+
+```console
+$ sudo net-ctrl.sh -c 'snapctl set --view :proxy-control https.url="not a url?"'
+$ snap changes
+ID   Status  Spawn                     Ready                     Summary
+[...]
+708  Error   today at 11:40 CET        today at 11:40 CET        Modify registry "f22PSauKuNkwQTM9Wz67ZCjNACuSjjhN/network"
+$ snap tasks 708
+Status  Spawn               Ready               Summary
+Undone  today at 11:43 CET  today at 11:43 CET  Clears the ongoing registry transaction from state (on error)
+Error   today at 11:43 CET  today at 11:43 CET  Run hook change-view-proxy-control of snap "net-ctrl"
+Hold    today at 11:43 CET  today at 11:43 CET  Run hook proxy-observe-view-changed of snap "browser"
+Hold    today at 11:43 CET  today at 11:43 CET  Commit changes to registry "f22PSauKuNkwQTM9Wz67ZCjNACuSjjhN/network"
+Hold    today at 11:43 CET  today at 11:43 CET  Clears the ongoing registry transaction from state
+
+......................................................................
+Run hook change-view-proxy-control of snap "net-ctrl"
+
+2024-10-30T13:43:38+03:00 ERROR run hook "change-view-proxy-control": failed to validate url: not a url?
+```
+
+## Addendum
