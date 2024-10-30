@@ -221,3 +221,34 @@ $ docker logs -f squid-container
 1729879108.361   2812 172.17.0.1 TCP_TUNNEL/200 5435 CONNECT example.com:443 - HIER_DIRECT/93.184.215.14 -
 1729879154.849   1618 172.17.0.1 TCP_TUNNEL/200 5458 CONNECT example.com:443 - HIER_DIRECT/93.184.215.14 -
 ```
+
+## Hooks
+
+### browser/proxy-observe-view-changed
+
+```console
+$ sudo net-ctrl.sh -c 'snapctl set --view :proxy-control https.url="http://localhost:3199/"'
+$ snap changes
+ID   Status  Spawn                     Ready                     Summary
+[...]
+692  Done    today at 10:32 CET        today at 10:32 CET        Modify registry "f22PSauKuNkwQTM9Wz67ZCjNACuSjjhN/network"
+$ snap tasks 692
+Status  Spawn               Ready               Summary
+Done    today at 10:32 CET  today at 10:32 CET  Clears the ongoing registry transaction from state (on error)
+Done    today at 10:32 CET  today at 10:32 CET  Run hook proxy-observe-view-changed of snap "browser"
+Done    today at 10:32 CET  today at 10:32 CET  Commit changes to registry "f22PSauKuNkwQTM9Wz67ZCjNACuSjjhN/network"
+Done    today at 10:32 CET  today at 10:32 CET  Clears the ongoing registry transaction from state
+$ cat /var/snap/browser/common/view-changed-proxy-observe
+{
+    "ftp": {
+        "url": "ftp://proxy.example.com"
+    },
+    "https": {
+        "bypass": [
+            "https://127.0.0.1",
+            "https://localhost"
+        ],
+        "url": "http://localhost:3199/"
+    }
+}
+```
