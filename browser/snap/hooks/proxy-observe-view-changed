@@ -1,7 +1,7 @@
 #!/bin/sh -e
 
 value=$(snapctl get --view :proxy-observe -d)
-echo "$value" > "$SNAP_COMMON"/view-changed-proxy-observe
+echo "$value" > "$SNAP_COMMON"/new-config.json
 
 # for instance, you can use this hook to watch for configuration changes
 # and restart services if needed
