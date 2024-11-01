@@ -2,7 +2,7 @@
 
 > *registries might be renamed
 
-Registries provide a new mechanism for configuring snaps in the snappy ecosystem.
+Registries provide a new mechanism for configuring snaps in the snappy ecosystem. They enable configuration sharing between snaps while maintaining security and proper access control.
 
 For this demo, we'll set up a `network` registry to share proxy configuration between snaps.
 
@@ -76,26 +76,26 @@ views:
   control-proxy:
     rules:
       -
+        request: {protocol}
+        storage: proxy.{protocol}
         content:
           -
-            access: read-write
             request: url
             storage: url
+            access: read-write
           -
             request: bypass
             storage: bypass
-        request: {protocol}
-        storage: proxy.{protocol}
   observe-proxy:
     rules:
       -
-        access: read
         request: https
         storage: proxy.https
-      -
         access: read
+      -
         request: ftp
         storage: proxy.ftp
+        access: read
 ```
 
 Each view has a set of rules that hold the `request` path, the underlying `storage`, and the `access` method. You can use placeholders in the `request` and `storage`. In the example above, `{protocol}` is a placeholder which maps to `proxy.{protocol}`. For instance, `https` -> `proxy.https`.
@@ -138,8 +138,9 @@ In a diagram, this setup looks like this:
 
 ![registries](docs/media/with-registries.png)
 
-The `net-ctrl` snap acts as the custodian of the registry view. A custodian snap can validate the view data being written using hooks such as `change-view-<plug>`.\
-The other snaps are called "observers" of the registry view. They can use `<plug>-view-changed` hooks to watch changes to the view. This could be useful for the snaps to update their own config and/or restart runnning services.
+The `net-ctrl` snap acts as the custodian of the registry view. A custodian snap can validate the view data being written using [hooks](https://snapcraft.io/docs/supported-snap-hooks) such as `change-view-<plug>`.\
+The other snaps are called "observers" of the registry view. They can use `<plug>-view-changed` hooks to watch changes to the view. This could be useful for the snaps to update their own config and/or restart runnning services.\
+A snap can be an observer & custodian of many different views.
 
 The roles are defined as plugs in the respective snap's `snapcraft.yaml`. Like so:
 
@@ -168,9 +169,9 @@ plugs:
 
 The registries feature is currently behind an experimental flag & you need to run `snap set system experimental.registries=true` to enable it.
 
-You can create a registry assertion "by hand" where you sign it itself or you can use `snapcraft` which launches an editor to type the assertion in, then it signs the assertion & uploads it to the Store (see [this addendum](#creating-a-registry-assertion-with-snapcraft)).
+You can create a registry assertion "by hand" where you sign it yourself or you can use `snapcraft` which launches an editor to type the assertion in, then it signs the assertion & uploads it to the Store (see [this addendum](#creating-a-registry-assertion-with-snapcraft)).
 
-Create a `network-registry.json` file and put your assertion there. Please note that the `body` must be in a _very specific_ format so run your json through `jq` like so: `echo '{...}' | jq -S | jq -sR`.
+Create a `network-registry.json` file and put your assertion there. The `body` must be in a _very specific_ format so run your json through `jq` like so: `echo '{...}' | jq -S | jq -sR`.
 
 #### Sign & Acknowledge
 
@@ -185,7 +186,7 @@ $ snap ack network-registry.assert
 
 **cannot resolve prerequisite assertion**
 
-This errror occurs when trying to acknowledge the assertion but some requisite assertions are not found on the system. We'll need to fetch them from the Store.
+This error occurs when trying to acknowledge the assertion but some requisite assertions are not found on the system. We'll need to fetch them from the Store.
 
 To fetch and acknowledge the `account` assertion, run:
 
@@ -250,6 +251,8 @@ registry   browser:proxy-observe  :registry  manual
 
 #### With `snapctl`
 
+Registry views can only be set if there is at least one snap on the system with a "custodian" role plug for that view.
+
 The commands take the form:
   - `snapctl set --view :<view-name> <dotted.path>=<value>`
   - `snapctl get --view :<view-name> [<dotted.path>] [-d]`
@@ -311,9 +314,12 @@ $ snap get f22PSauKuNkwQTM9Wz67ZCjNACuSjjhN/network/control-proxy ftp.url
 ftp://proxy.example.com
 ```
 
-Please note that using `snap set` with registries doesn't seem to run the hooks.
+Please note that using `snap set` with registries doesn't seem to run the [hooks](https://snapcraft.io/docs/supported-snap-hooks).
 
 ## Hooks
+
+A [hook](https://snapcraft.io/docs/supported-snap-hooks) is an executable file that runs within a snap’s confined environment when a certain action occurs.\
+Snaps can implement hooks to manage and observe registry views. The hooks are `change-view-<plug>`, `save-view-<plug>`, `load-view-<plug>`, `query-view-<plug>`, & `<plug>-view-changed`. For this demo, we'll look at `change-view-<plug>` and `<plug>-view-changed`.
 
 ### browser/proxy-observe-view-changed (`<plug>-view-changed`)
 
@@ -357,7 +363,7 @@ This hook:
 1. Validates the `{protocol}.url` (data validation), and
 2. Ensures that internal company URLs are never proxied (data decoration).
 
-#### Example 1
+#### Example 1: Validation
 
 ```console
 $ sudo net-ctrl.sh -c 'snapctl set --view :proxy-control https.url="not a url?"'
@@ -379,7 +385,7 @@ Run hook change-view-proxy-control of snap "net-ctrl"
 2024-10-30T17:38:59+03:00 ERROR run hook "change-view-proxy-control": failed to validate url: not a url?
 ```
 
-#### Example 2
+#### Example 2: Decoration
 
 ```console
 $ sudo snap run --shell net-ctrl.sh
@@ -407,6 +413,15 @@ $ sudo snap run --shell net-ctrl.sh
 ### Creating a Registry Assertion with Snapcraft
 
 Register for an Ubuntu One (staging) account [here](https://login.staging.ubuntu.com/) and for a Store (staging) account [here](https://dashboard.staging.snapcraft.io/).
+
+At the time of writing, creating a registry assertion with snapcraft was still in beta so we need to install from the beta channel:
+
+```console
+$ snap install snapcraft --beta --classic
+
+# or if already installed
+$ snap refresh snapcraft --beta
+```
 
 We need to use staging since the registries API is disabled on production:
 
@@ -505,13 +520,57 @@ $ surl -a staging https://dashboard.staging.snapcraft.io/api/v2/registries | jq
 }
 ```
 
+To fetch the full signed assertion, run:
+
+```console
+$ curl --silent --header "Accept: application/x.ubuntu.assertion" https://assertions.staging.ubuntu.com/v1/assertions/registry/<account-id>/<registry-name>
+type: registry
+authority-id: 10ptdA3uXGo7P7DCvMk9wSgKnHiYKEV0
+revision: 1
+account-id: 10ptdA3uXGo7P7DCvMk9wSgKnHiYKEV0
+name: net
+timestamp: 2024-10-25T08:55:22Z
+views:
+  wifi-setup:
+    rules:
+      -
+        access: write
+        request: ssids
+        storage: wifi.ssids
+body-length: 92
+sign-key-sha3-384: RFxSEcXp9jocWM85Hm9m62JOtXKvu1k5toUXUZ6RGw20Md3WlZaf7P-SpZ_ed1wD
+
+{
+  "storage": {
+    "schema": {
+      "wifi": {
+        "values": "any"
+      }
+    }
+  }
+}
+
+AcLBcwQAAQoAHRYhBL09/H3Nqvu18UELh5IhgQJaoqEDBQJnG1z7AAoJEJIhgQJaoqEDmLIQAKYT
+veCnwPt3oLtX0m6gcHxr7ggyhIoMNGfe7jx2v64kI8ZrgLYM/rhEUnBKce4oG3tVpRBDfh2UttQq
+pixb0PCwsSgpIhRqP+bzcxcff7py+PidKxEobLjGRVMMQVT4dQJw3LqgKMTqmPVqNgXszoFViKLH
+7UAWannUanE0CbckBFq5t1aunPH4KXXeW1DW1CCJlpRLaWZwqPQNM/EEEC2KQU6PoyE94VU2Jdm2
+6DiBEjENo2mcEWWuQXuTa9L4OsbtU3c3PbO3s5SlNd+jraGof4c1L58kzDE7hpxBI/1pGCF9172u
+aPbCEav8N9FNfRifIi2hj/IgSS4vyrnSW4jrB7wfTYRu8PiltQeIqV1kfwO3xFtigHggBAsL/jK/
+ISKUA6h5EAc2yG7y5xEE4SaXGmWoQ3YaeR4RNQHx9NjJ5MQKYtpprtfpPZUc9JMfRMSIMPFG1EM+
+ldfd4UWQYYQdnWrZc5PRlBlC7K4wTVOaF6BSduAX38ZM8EOPcc3Mf18Fj5uHOpW4PDOynQ6Lb8k3
+yidmyylvvmpB0DS1e3xLY2PNHMwZ9/UsO3kzegUIMSCVixn3vXbFx91W4GU2tVFi5jW35xkvx0nk
+xOAyEc2EBedXwu57XuIELIleoNm5+SUqAG9X97z/m8w6qHww57Lpwd8fEADgNDanDDNhtfZG
+```
+
 ### Checking if the `browser` snap works
 
-Run a docker container on the host (`proxy.example.com`) or locally:
+Run the web proxy on the host (`proxy.example.com`) or locally in a docker container:
 
 ```console
 $ docker run -d --name squid-container -e TZ=UTC -p 3128:3128 ubuntu/squid:5.2-22.04_beta
 ```
+
+Point the `http/https` proxy config to the web proxy and then call `browser` with a proxied URL:
 
 ```console
 $ sudo net-ctrl.sh -c 'snapctl set --view :proxy-control https.url="http://localhost:3128/"'
@@ -530,9 +589,15 @@ More information... (https://www.iana.org/domains/example)
 
 ```
 
+Check the logs and verify that the HTTP calls were indeed proxied:
+
 ```console
 $ docker logs -f squid-container
 [...]
 1729879108.361   2812 172.17.0.1 TCP_TUNNEL/200 5435 CONNECT example.com:443 - HIER_DIRECT/93.184.215.14 -
 1729879154.849   1618 172.17.0.1 TCP_TUNNEL/200 5458 CONNECT example.com:443 - HIER_DIRECT/93.184.215.14 -
 ```
+
+### Further Reading
+
+- SD133 Specification: Configuration registries and views
