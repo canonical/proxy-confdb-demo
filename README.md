@@ -1,10 +1,12 @@
-# A Registries* Demo
+# A Confdb Demo
 
-> *registries might be renamed
+Confdbs provide a new mechanism for configuring snaps in the snappy ecosystem. They enable configuration sharing between snaps while maintaining security and proper access control.
 
-Registries provide a new mechanism for configuring snaps in the snappy ecosystem. They enable configuration sharing between snaps while maintaining security and proper access control.
+For this demo, we'll set up a `network` confdb to share proxy configuration between snaps.
 
-For this demo, we'll set up a `network` registry to share proxy configuration between snaps.
+> [!WARNING]
+> Confdbs were previously called registries and aspects before that. Snapd, Snapcraft, and the Store have not caught up with this rename yet.
+> For now, replace every mention of "confdb" with "registry" and "confdbs" with "registries".
 
 ## The Past
 
@@ -12,7 +14,7 @@ Traditionally, snap configuration has been tightly coupled to individual snaps, 
 
 ![setup](docs/media/setup.png)
 
-We'll look at several (somewhat hacky) workarounds to get around this and how registries can fix this.
+We'll look at several (somewhat hacky) workarounds to get around this and how confdbs can fix this.
 
 ### _content_ interface
 
@@ -26,15 +28,15 @@ In this scenario, we also have an additional snap (`net-ctrl`) that we set snap 
 
 ![snapd-control interface](docs/media/with-snapd-control.png)
 
-## Using Registries
+## Using Confdbs
 
 ### Intro
 
-Registries separate snaps from their configuration, enabling easier cross-snap configuration sharing.\
-A registry is defined using a `registry` assertion which looks like this:
+Confdbs separate snaps from their configuration, enabling easier cross-snap configuration sharing.\
+A confdb is defined using a `confdb` assertion which looks like this:
 
 ```yaml
-type: registry
+type: confdb
 authority-id: <account-id>
 account-id: <account-id>
 name: <string>
@@ -67,9 +69,9 @@ timestamp: <date -Iseconds --utc>
 <signature>
 ```
 
-Snaps do not act on the the raw configuration in the storage directly. This is mediated by registry views which allows the views & storage to evolve independently.
+Snaps do not act on the the raw configuration in the storage directly. This is mediated by confdb views which allows the views & storage to evolve independently.
 
-We'll create two views: `control-proxy` and `observe-proxy`. `control-proxy` allows for `read-write` access but `observe-proxy` only allows `read` access. This is the naming convention in registries.
+We'll create two views: `control-proxy` and `observe-proxy`. `control-proxy` allows for `read-write` access but `observe-proxy` only allows `read` access. This is the naming convention in confdbs.
 
 ```yaml
 views:
@@ -136,10 +138,10 @@ The stored config respects the following schema:
 
 In a diagram, this setup looks like this:
 
-![registries](docs/media/with-registries.png)
+![confdbs](docs/media/with-confdbs.png)
 
-The `net-ctrl` snap acts as the custodian of the registry view. A custodian snap can validate the view data being written using [hooks](https://snapcraft.io/docs/supported-snap-hooks) such as `change-view-<plug>`.\
-The other snaps are called "observers" of the registry view. They can use `<plug>-view-changed` hooks to watch changes to the view. This could be useful for the snaps to update their own config and/or restart runnning services.\
+The `net-ctrl` snap acts as the custodian of the confdb view. A custodian snap can validate the view data being written using [hooks](https://snapcraft.io/docs/supported-snap-hooks) such as `change-view-<plug>`.\
+The other snaps are called "observers" of the confdb view. They can use `<plug>-view-changed` hooks to watch changes to the view. This could be useful for the snaps to update their own config and/or restart runnning services.\
 A snap can be an observer & custodian of many different views.
 
 The roles are defined as plugs in the respective snap's `snapcraft.yaml`. Like so:
@@ -149,7 +151,7 @@ The roles are defined as plugs in the respective snap's `snapcraft.yaml`. Like s
 ```yaml
 plugs:
   proxy-control:
-    interface: registry
+    interface: confdb
     account: <account-id>
     view: network/control-proxy
     role: custodian
@@ -160,26 +162,26 @@ plugs:
 ```yaml
 plugs:
   proxy-observe:
-    interface: registry
+    interface: confdb
     account: <account-id>
     view: network/observe-proxy
 ```
 
-### Create a `registry` Assertion
+### Create a `confdb` Assertion
 
-The registries feature is currently behind an experimental flag & you need to run `snap set system experimental.registries=true` to enable it.
+The confdbs feature is currently behind an experimental flag & you need to run `snap set system experimental.confdbs=true` to enable it.
 
-You can create a registry assertion "by hand" where you sign it yourself or you can use `snapcraft` which launches an editor to type the assertion in, then it signs the assertion & uploads it to the Store (see [this addendum](#creating-a-registry-assertion-with-snapcraft)).
+You can create a confdb assertion "by hand" where you sign it yourself or you can use `snapcraft` which launches an editor to type the assertion in, then it signs the assertion & uploads it to the Store (see [this addendum](#creating-a-confdb-assertion-with-snapcraft)).
 
-Create a `network-registry.json` file and put your assertion there. The `body` must be in a _very specific_ format so run your json through `jq` like so: `echo '{...}' | jq -S | jq -sR`.
+Create a `network-confdb.json` file and put your assertion there. The `body` must be in a _very specific_ format so run your json through `jq` like so: `echo '{...}' | jq -S | jq -sR`.
 
 #### Sign & Acknowledge
 
 Next, we'll sign the assertion, save the signed version in a `.assert` file, and finally acknowledge it.
 
 ```console
-$ snap sign -k <key-name> network-registry.json > network-registry.assert
-$ snap ack network-registry.assert
+$ snap sign -k <key-name> network-confdb.json > network-confdb.assert
+$ snap ack network-confdb.assert
 ```
 
 ###### Errors You Might Encounter
@@ -202,7 +204,7 @@ $ snap known --remote account-key public-key-sha3-384=<key-sha-digest> > /tmp/ac
 $ snap ack /tmp/account-key.assert
 ```
 
-Finally, `ack` the registry assertion itself.
+Finally, `ack` the confdb assertion itself.
 
 ### Build & Install Snaps
 
@@ -238,20 +240,20 @@ Next, we'll connect the interfaces for both snaps.
 $ snap connect net-ctrl:proxy-control
 $ snap connections net-ctrl
 Interface  Plug                    Slot       Notes
-registry   net-ctrl:proxy-control  :registry  manual
+confdb     net-ctrl:proxy-control  :confdb  manual
 
 $ snap connect browser:proxy-observe
 $ snap connections browser
 Interface  Plug                   Slot       Notes
 network    browser:network        :network   -
-registry   browser:proxy-observe  :registry  manual
+confdb     browser:proxy-observe  :confdb  manual
 ```
 
 ### Setting & Reading the Config
 
 #### With `snapctl`
 
-Registry views can only be set if there is at least one snap on the system with a "custodian" role plug for that view.
+Confdb views can only be set if there is at least one snap on the system with a "custodian" role plug for that view.
 
 The commands take the form:
   - `snapctl set --view :<view-name> <dotted.path>=<value>`
@@ -291,8 +293,8 @@ $ snap run --shell browser
 #### With `snap set`
 
 The commands take the form:
-  - `snap set <account-id>/<registry>/<view> <dotted.path>=<value>`
-  - `snap get <account-id>/<registry>/<view> [<dotted.path>] [-d]`
+  - `snap set <account-id>/<confdb>/<view> <dotted.path>=<value>`
+  - `snap get <account-id>/<confdb>/<view> [<dotted.path>] [-d]`
 
 ```console
 $ snap set f22PSauKuNkwQTM9Wz67ZCjNACuSjjhN/network/control-proxy 'https.bypass=["https://127.0.0.1", "https://localhost"]'
@@ -314,12 +316,12 @@ $ snap get f22PSauKuNkwQTM9Wz67ZCjNACuSjjhN/network/control-proxy ftp.url
 ftp://proxy.example.com
 ```
 
-Please note that using `snap set` with registries doesn't seem to run the [hooks](https://snapcraft.io/docs/supported-snap-hooks).
+Please note that using `snap set` with confdbs doesn't seem to run the [hooks](https://snapcraft.io/docs/supported-snap-hooks).
 
 ## Hooks
 
 A [hook](https://snapcraft.io/docs/supported-snap-hooks) is an executable file that runs within a snap’s confined environment when a certain action occurs.\
-Snaps can implement hooks to manage and observe registry views. The hooks are `change-view-<plug>`, `save-view-<plug>`, `load-view-<plug>`, `query-view-<plug>`, & `<plug>-view-changed`. For this demo, we'll look at `change-view-<plug>` and `<plug>-view-changed`.
+Snaps can implement hooks to manage and observe confdb views. The hooks are `change-view-<plug>`, `save-view-<plug>`, `load-view-<plug>`, `query-view-<plug>`, & `<plug>-view-changed`. For this demo, we'll look at `change-view-<plug>` and `<plug>-view-changed`.
 
 ### browser/proxy-observe-view-changed (`<plug>-view-changed`)
 
@@ -330,14 +332,14 @@ $ sudo net-ctrl.sh -c 'snapctl set --view :proxy-control https.url="http://local
 $ snap changes
 ID   Status  Spawn                     Ready                     Summary
 [...]
-765  Done    today at 15:36 CET        today at 15:36 CET        Modify registry "f22PSauKuNkwQTM9Wz67ZCjNACuSjjhN/network"
+765  Done    today at 15:36 CET        today at 15:36 CET        Modify confdb "f22PSauKuNkwQTM9Wz67ZCjNACuSjjhN/network"
 $ snap tasks 765
 Status  Spawn               Ready               Summary
-Done    today at 15:36 CET  today at 15:36 CET  Clears the ongoing registry transaction from state (on error)
+Done    today at 15:36 CET  today at 15:36 CET  Clears the ongoing confdb transaction from state (on error)
 Done    today at 15:36 CET  today at 15:36 CET  Run hook change-view-proxy-control of snap "net-ctrl"
 Done    today at 15:36 CET  today at 15:36 CET  Run hook proxy-observe-view-changed of snap "browser"
-Done    today at 15:36 CET  today at 15:36 CET  Commit changes to registry "f22PSauKuNkwQTM9Wz67ZCjNACuSjjhN/network"
-Done    today at 15:36 CET  today at 15:36 CET  Clears the ongoing registry transaction from state
+Done    today at 15:36 CET  today at 15:36 CET  Commit changes to confdb "f22PSauKuNkwQTM9Wz67ZCjNACuSjjhN/network"
+Done    today at 15:36 CET  today at 15:36 CET  Clears the ongoing confdb transaction from state
 $ cat /var/snap/browser/common/new-config.json
 {
     "ftp": {
@@ -370,14 +372,14 @@ $ sudo net-ctrl.sh -c 'snapctl set --view :proxy-control https.url="not a url?"'
 $ snap changes
 ID   Status  Spawn                     Ready                     Summary
 [...]
-766  Error   today at 15:38 CET        today at 15:38 CET        Modify registry "f22PSauKuNkwQTM9Wz67ZCjNACuSjjhN/network"
+766  Error   today at 15:38 CET        today at 15:38 CET        Modify confdb "f22PSauKuNkwQTM9Wz67ZCjNACuSjjhN/network"
 $ snap tasks 766
 Status  Spawn               Ready               Summary
-Undone  today at 15:38 CET  today at 15:38 CET  Clears the ongoing registry transaction from state (on error)
+Undone  today at 15:38 CET  today at 15:38 CET  Clears the ongoing confdb transaction from state (on error)
 Error   today at 15:38 CET  today at 15:38 CET  Run hook change-view-proxy-control of snap "net-ctrl"
 Hold    today at 15:38 CET  today at 15:38 CET  Run hook proxy-observe-view-changed of snap "browser"
-Hold    today at 15:38 CET  today at 15:38 CET  Commit changes to registry "f22PSauKuNkwQTM9Wz67ZCjNACuSjjhN/network"
-Hold    today at 15:38 CET  today at 15:38 CET  Clears the ongoing registry transaction from state
+Hold    today at 15:38 CET  today at 15:38 CET  Commit changes to confdb "f22PSauKuNkwQTM9Wz67ZCjNACuSjjhN/network"
+Hold    today at 15:38 CET  today at 15:38 CET  Clears the ongoing confdb transaction from state
 
 ......................................................................
 Run hook change-view-proxy-control of snap "net-ctrl"
@@ -410,11 +412,11 @@ $ sudo snap run --shell net-ctrl.sh
 
 ## Addendum
 
-### Creating a Registry Assertion with Snapcraft
+### Creating a Confdb Assertion with Snapcraft
 
 Register for an Ubuntu One (staging) account [here](https://login.staging.ubuntu.com/) and for a Store (staging) account [here](https://dashboard.staging.snapcraft.io/).
 
-At the time of writing, creating a registry assertion with snapcraft was still in beta so we need to install from the beta channel:
+At the time of writing, creating a confdb assertion with snapcraft was still in beta so we need to install from the beta channel:
 
 ```console
 $ snap install snapcraft --beta --classic
@@ -423,12 +425,12 @@ $ snap install snapcraft --beta --classic
 $ snap refresh snapcraft --beta
 ```
 
-We need to use staging since the registries API is disabled on production:
+We need to use staging since the confdbs API is disabled on production:
 
 ```console
-$ snapcraft edit-registries <account-id> network --key-name=<key-name>
+$ snapcraft edit-confdbs <account-id> network --key-name=<key-name>
 Store operation failed:
-- feature-disabled: Registries API is disabled
+- feature-disabled: Confdb API is disabled
 ```
 
 #### Login
@@ -446,7 +448,7 @@ $ snapcraft create-key <key-name>
 $ snapcraft register-key <key-name>
 ```
 
-#### Create a New Registry
+#### Create a New Confdb
 
 ```console
 $ snapcraft whoami
@@ -457,17 +459,17 @@ permissions: package_access, package_manage, package_metrics, package_push, pack
 channels: no restrictions
 expires: 2025-10-25T08:38:11.000Z
 
-$ snapcraft edit-registries <account-id> network --key-name=<key-name>
+$ snapcraft edit-confdbs <account-id> network --key-name=<key-name>
 Successfully created revision 1 for 'network'.
 
-$ snapcraft list-registries
+$ snapcraft list-confdbs
 Account ID                        Name      Revision  When
 <account-id>                      network          1  2024-10-2
 ```
 
 #### API
 
-The API documentation is available [here](https://dashboard.snapcraft.io/docs/reference/v2/en/registries.html).\
+The API documentation is available [here](https://dashboard.snapcraft.io/docs/reference/v2/en/confdbs.html).\
 Install [surl](https://snapcraft.io/surl) to interact with it.
 
 ```console
@@ -489,7 +491,7 @@ $ surl -a staging -s staging -e <email>
   "errors": []
 }
 
-$ surl -a staging https://dashboard.staging.snapcraft.io/api/v2/registries | jq
+$ surl -a staging https://dashboard.staging.snapcraft.io/api/v2/confdbs | jq
 {
   "assertions": [
     {
@@ -501,7 +503,7 @@ $ surl -a staging https://dashboard.staging.snapcraft.io/api/v2/registries | jq
         "revision": "1",
         "sign-key-sha3-384": "RFxSEcXp9jocWM85Hm9m62JOtXKvu1k5toUXUZ6RGw20Md3WlZaf7P-SpZ_ed1wD",
         "timestamp": "2024-10-25T08:55:22Z",
-        "type": "registry",
+        "type": "confdb",
         "views": {
           "wifi-setup": {
             "rules": [
@@ -523,8 +525,8 @@ $ surl -a staging https://dashboard.staging.snapcraft.io/api/v2/registries | jq
 To fetch the full signed assertion, run:
 
 ```console
-$ curl --silent --header "Accept: application/x.ubuntu.assertion" https://assertions.staging.ubuntu.com/v1/assertions/registry/<account-id>/<registry-name>
-type: registry
+$ curl --silent --header "Accept: application/x.ubuntu.assertion" https://assertions.staging.ubuntu.com/v1/assertions/confdb/<account-id>/<confdb-name>
+type: confdb
 authority-id: 10ptdA3uXGo7P7DCvMk9wSgKnHiYKEV0
 revision: 1
 account-id: 10ptdA3uXGo7P7DCvMk9wSgKnHiYKEV0
@@ -600,4 +602,4 @@ $ docker logs -f squid-container
 
 ### Further Reading
 
-- SD133 Specification: Configuration registries and views
+- SD133 Specification: Confdbs and views
