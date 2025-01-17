@@ -17,8 +17,8 @@ config = json.loads(proc.stdout)
 
 for protocol, proxy_config in config.items():
     # check that the URL format is valid
-    url = proxy_config["url"]
-    if not validators.url(url, simple_host=True):
+    url = proxy_config.get("url")
+    if url and not validators.url(url, simple_host=True):
         err = f"failed to validate url: {url}"
         cmd = f"snapctl fail {err}"
         subprocess.run(cmd.split())
