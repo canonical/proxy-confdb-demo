@@ -204,6 +204,9 @@ $ snap known --remote account-key public-key-sha3-384=<key-sha-digest> > /tmp/ac
 $ snap ack /tmp/account-key.assert
 ```
 
+> [!TIP]
+> To get the `key-sha-digest`, run `snap keys` and pick it from the `SHA3-384` column.
+
 Finally, `ack` the confdb assertion itself.
 
 ### Build & Install Snaps
