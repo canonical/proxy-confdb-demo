@@ -10,7 +10,7 @@ For this demo, we'll set up a `network` confdb to share proxy configuration betw
 
 ## The Past
 
-Traditionally, snap configuration has been tightly coupled to individual snaps, making it difficult to share configuration between snaps. In this example, each of the snaps (firefox, chromium, & brave) have their own proxy config set through `snap set` which leads to a lot of duplication.
+Traditionally, snap configuration has been tightly coupled to individual snaps, making it difficult to share configuration between snaps. In this example, each of the snaps (Firefox, Chromium, & Brave) have their own proxy config set through `snap set` which leads to a lot of duplication.
 
 ![setup](docs/media/setup.png)
 
@@ -318,8 +318,6 @@ $ snap get f22PSauKuNkwQTM9Wz67ZCjNACuSjjhN/network/observe-proxy ftp -d
 $ snap get f22PSauKuNkwQTM9Wz67ZCjNACuSjjhN/network/control-proxy ftp.url
 ftp://proxy.example.com
 ```
-
-Please note that using `snap set` with confdbs doesn't seem to run the [hooks](https://snapcraft.io/docs/supported-snap-hooks).
 
 ## Hooks
 
