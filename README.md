@@ -321,7 +321,7 @@ ftp://proxy.example.com
 
 ## Hooks
 
-A [hook](https://snapcraft.io/docs/supported-snap-hooks) is an executable file that runs within a snap’s confined environment when a certain action occurs.\
+A [hook](https://snapcraft.io/docs/supported-snap-hooks) is an executable file that runs within a snap's confined environment when a certain action occurs.\
 Snaps can implement hooks to manage and observe confdb views. The hooks are `change-view-<plug>`, `save-view-<plug>`, `load-view-<plug>`, `query-view-<plug>`, & `<plug>-view-changed`. For this demo, we'll look at `change-view-<plug>` and `<plug>-view-changed`.
 
 ### browser/proxy-observe-view-changed (`<plug>-view-changed`)
@@ -470,7 +470,7 @@ Account ID                        Name      Revision  When
 
 #### API
 
-The API documentation is available [here](https://dashboard.snapcraft.io/docs/reference/v2/en/confdbs.html).\
+The API documentation is available [here](https://dashboard.staging.snapcraft.io/docs/reference/v2/en/confdbs.html).\
 Install [surl](https://snapcraft.io/surl) to interact with it.
 
 ```console
@@ -592,7 +592,7 @@ More information... (https://www.iana.org/domains/example)
 
 ```
 
-Check the logs and verify that the HTTP calls were indeed proxied:
+Check the proxy's logs and verify that the HTTP calls were indeed proxied:
 
 ```console
 $ docker logs -f squid-container
