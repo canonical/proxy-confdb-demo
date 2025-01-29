@@ -5,8 +5,8 @@ Confdbs provide a new mechanism for configuring snaps in the snappy ecosystem. T
 For this demo, we'll set up a `network` confdb to share proxy configuration between snaps.
 
 > [!WARNING]
-> Confdbs were previously called registries and aspects before that. Snapd, Snapcraft, and the Store have not caught up with this rename yet.
-> For now, replace every mention of "confdb" with "registry" and "confdbs" with "registries".
+> Confdbs were previously called registries and aspects before that. Snapcraft has not caught up with this rename yet.
+> For now, the `snapcraft` bits might not work as the commands are available under the `-registries` name.
 
 ## The Past
 
