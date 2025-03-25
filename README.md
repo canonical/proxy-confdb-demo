@@ -691,5 +691,5 @@ $ docker logs -f squid-container
 
 ### Further Reading
 
-- SD208 Specication: confdb and views
+- SD208 Specification: confdb and views
 - SD133 Specification: confdb and views (rejected in favor of SD208)
