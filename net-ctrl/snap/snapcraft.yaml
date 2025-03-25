@@ -14,6 +14,12 @@ plugs:
     view: network/control-proxy
     role: custodian
 
+  proxy-observe:
+    interface: confdb
+    account: f22PSauKuNkwQTM9Wz67ZCjNACuSjjhN
+    view: network/observe-proxy
+    role: custodian
+
 parts:
   net-ctrl:
     plugin: python
