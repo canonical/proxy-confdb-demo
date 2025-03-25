@@ -331,6 +331,82 @@ $ snap get f22PSauKuNkwQTM9Wz67ZCjNACuSjjhN/network/control-proxy ftp.url
 ftp://proxy.example.com
 ```
 
+#### With the API
+
+```console
+$ sudo curl --unix-socket /run/snapd.socket \
+  "http://localhost/v2/confdb/f22PSauKuNkwQTM9Wz67ZCjNACuSjjhN/network/control-proxy" \
+  -X PUT -d '{"https.bypass": ["https://127.0.0.1", "https://localhost"]}' -s | jq
+{
+  "type": "async",
+  "status-code": 202,
+  "status": "Accepted",
+  "result": null,
+  "change": "2510"
+}
+$ sudo curl --unix-socket /run/snapd.socket "http://localhost/v2/changes/2510" -s | jq
+{
+  "type": "sync",
+  "status-code": 200,
+  "status": "OK",
+  "result": {
+    "id": "2510",
+    "kind": "set-confdb",
+    "summary": "Set confdb through \"f22PSauKuNkwQTM9Wz67ZCjNACuSjjhN/network/control-proxy\"",
+    "status": "Done",
+    "tasks": [
+      ...
+    ],
+    "ready": true,
+    "spawn-time": "2025-03-25T12:48:07.100586091+03:00",
+    "ready-time": "2025-03-25T12:48:07.67015426+03:00"
+  }
+}
+
+$ sudo curl --unix-socket /run/snapd.socket \
+  "http://localhost/v2/confdb/f22PSauKuNkwQTM9Wz67ZCjNACuSjjhN/network/observe-proxy" -s | jq
+{
+  "type": "async",
+  "status-code": 202,
+  "status": "Accepted",
+  "result": null,
+  "change": "2512"
+}
+$ sudo curl --unix-socket /run/snapd.socket "http://localhost/v2/changes/2511" -s | jq
+{
+  "type": "sync",
+  "status-code": 200,
+  "status": "OK",
+  "result": {
+    "id": "2511",
+    "kind": "get-confdb",
+    "summary": "Get confdb through \"f22PSauKuNkwQTM9Wz67ZCjNACuSjjhN/network/observe-proxy\"",
+    "status": "Done",
+    "ready": true,
+    "spawn-time": "2025-03-25T12:50:25.159691967+03:00",
+    "ready-time": "2025-03-25T12:50:25.15971973+03:00",
+    "data": {
+      "confdb-data": {
+        "ftp": {
+          "bypass": [
+            "*://*.company.internal"
+          ],
+          "url": "ftp://proxy.example.com"
+        },
+        "https": {
+          "bypass": [
+            "https://127.0.0.1",
+            "https://localhost",
+            "*://*.company.internal"
+          ],
+          "url": "http://localhost:3128/"
+        }
+      }
+    }
+  }
+}
+```
+
 ## Hooks
 
 A [hook](https://snapcraft.io/docs/supported-snap-hooks) is an executable file that runs within a snap's confined environment when a certain action occurs.\
