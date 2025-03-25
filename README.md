@@ -214,7 +214,7 @@ $ snap ack /tmp/account-key.assert
 ```
 
 > [!TIP]
-> Make sure you have a key registered with the Store: `snapcraft register-key <name>`
+> Make sure you have a key registered with the Store: `snapcraft register-key <key-name>`
 
 > [!TIP]
 > To get the `key-sha-digest`, run `snap keys` and pick it from the `SHA3-384` column.
@@ -308,8 +308,8 @@ $ snap run --shell browser
 #### With `snap set`
 
 The commands take the form:
-  - `snap set <account-id>/<confdb>/<view> <dotted.path>=<value>`
-  - `snap get <account-id>/<confdb>/<view> [<dotted.path>] [-d]`
+  - `snap set <account-id>/<confdb-schema>/<view> <dotted.path>=<value>`
+  - `snap get <account-id>/<confdb-schema>/<view> [<dotted.path>] [-d]`
 
 ```console
 $ snap set f22PSauKuNkwQTM9Wz67ZCjNACuSjjhN/network/control-proxy 'https.bypass=["https://127.0.0.1", "https://localhost"]'
@@ -514,7 +514,7 @@ $ snap install snapcraft --beta --classic
 $ snap refresh snapcraft --beta
 ```
 
-We need to use staging since the confdbs API is disabled on production:
+We need to use staging since the confdb schemas API is disabled on production:
 
 ```console
 $ snapcraft edit-confdb-schema <account-id> network --key-name=<key-name>
@@ -614,8 +614,8 @@ $ surl -a staging https://dashboard.staging.snapcraft.io/api/v2/confdb-schemas |
 To fetch the full signed assertion, run:
 
 ```console
-$ curl --silent --header "Accept: application/x.ubuntu.assertion" https://assertions.staging.ubuntu.com/v1/assertions/confdb-schemas/<account-id>/<confdb-name>
-type: confdb-schemas
+$ curl --silent --header "Accept: application/x.ubuntu.assertion" https://assertions.staging.ubuntu.com/v1/assertions/confdb-schemas/<account-id>/<confdb-schema>
+type: confdb-schema
 authority-id: 10ptdA3uXGo7P7DCvMk9wSgKnHiYKEV0
 revision: 1
 account-id: 10ptdA3uXGo7P7DCvMk9wSgKnHiYKEV0
