@@ -33,7 +33,7 @@ In this scenario, we also have an additional snap (`net-ctrl`) that we set snap 
 ### Intro
 
 Confdbs separate snaps from their configuration, enabling easier cross-snap configuration sharing.\
-A confdb is defined using a `confdb-schema` assertion which looks like this:
+A confdb is defined using a [`confdb-schema` assertion](https://documentation.ubuntu.com/core/reference/assertions/confdb-schema/) which looks like this:
 
 ```yaml
 type: confdb-schema
@@ -141,7 +141,7 @@ In a diagram, this setup looks like this:
 ![With a confdb](docs/media/with-confdb.png)
 
 The `net-ctrl` snap acts as the custodian of the confdb view. A custodian snap can validate the view data being written using [hooks](https://snapcraft.io/docs/supported-snap-hooks) such as `change-view-<plug>`.\
-The other snaps are called "observers" of the confdb view. They can use `observe-view-<plug>` hooks to watch changes to the view. This could be useful for the snaps to update their own config and/or restart runnning services.\
+The other snaps are called "observers" or "readers" of the confdb view. They can use `observe-view-<plug>` hooks to watch changes to the view. This could be useful for the snaps to update their own config and/or restart runnning services.\
 A snap can be an observer & custodian of many different views.
 
 The roles are defined as plugs in the respective snap's `snapcraft.yaml`. Like so:
@@ -166,7 +166,7 @@ plugs:
 > [!NOTE]
 > A view must have at least one custodian snap.
 
-**browser** (observer)
+**browser** (observer/reader)
 
 ```yaml
 plugs:
@@ -249,7 +249,7 @@ browser 0.1 installed
 
 ### Interfaces
 
-Next, we'll connect the interfaces for both snaps.
+Next, we'll connect the [interfaces](https://snapcraft.io/docs/confdb-interface) for both snaps.
 
 ```console
 $ snap connect net-ctrl:proxy-control
@@ -691,5 +691,7 @@ $ docker logs -f squid-container
 
 ### Further Reading
 
+- [Configure with confdb](https://snapcraft.io/docs/configure-with-confdb)
+- [confdb-schema assertion](https://documentation.ubuntu.com/core/reference/assertions/confdb-schema/)
+- [confdb interface](https://snapcraft.io/docs/confdb-interface)
 - SD208 Specification: confdb and views
-- SD133 Specification: confdb and views (rejected in favor of SD208)
