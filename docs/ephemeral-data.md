@@ -93,7 +93,7 @@ import os
 import sys
 
 # For demo only, otherwise should get user path from env
-config_file = "/home/stephen/network.env"
+config_file = "/home/<user>/network.env"  # TODO: Update <user>
 
 # Get entire view in one call
 result = subprocess.run(
@@ -206,7 +206,7 @@ import subprocess
 import sys
 
 # For demo only, otherwise should get user path from env
-config_file = "/home/stephen/network.env"
+config_file = "/home/<user>/network.env"  # TODO: Update <user>
 
 if not os.path.exists(config_file):
     print(f"Config file {config_file} not found")
