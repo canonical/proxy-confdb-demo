@@ -22,7 +22,6 @@ for protocol, proxy_config in config.items():
         err = f"failed to validate url: {url}"
         cmd = f"snapctl fail {err}"
         subprocess.run(cmd.split())
-        print(err)
         exit(1)
 
     # ensure that internal company URLs are never proxied
