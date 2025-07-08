@@ -36,3 +36,4 @@ apps:
     command: /bin/sh
     plugs:
       - proxy-control
+      - home

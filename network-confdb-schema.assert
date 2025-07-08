@@ -27,7 +27,7 @@ views:
         access: read
         request: ftp
         storage: proxy.ftp
-body-length: 485
+body-length: 482
 sign-key-sha3-384: xkd_Y2ay5N2Uo14v_wsCtfVJYLAVbJgxbiKM8Ne4mZBflaROriZgk2nb5i9Oebum
 
 {
@@ -44,7 +44,7 @@ sign-key-sha3-384: xkd_Y2ay5N2Uo14v_wsCtfVJYLAVbJgxbiKM8Ne4mZBflaROriZgk2nb5i9Oe
     },
     "schema": {
       "proxy": {
-        "keys": "$protocol",
+        "keys": "string",
         "values": {
           "schema": {
             "bypass": {
@@ -60,13 +60,13 @@ sign-key-sha3-384: xkd_Y2ay5N2Uo14v_wsCtfVJYLAVbJgxbiKM8Ne4mZBflaROriZgk2nb5i9Oe
   }
 }
 
-AcLBcwQAAQoAHRYhBHCftZeyXSJlNBvC+h+HHdMBlPLtBQJn4lwFAAoJEB+HHdMBlPLtGKMP+wWm
-O8sLu4e0g+jUmncMPlVyK0f+ONL70YqzZ0PAMJS1b7orfoRd1b/PmLZ3vWcZxn+l4fszVkXiUj6M
-F8EUp+VeUCmqp5kILfElHkGWWZj/wvjnHXVv62NEgUO03CznrzorPtzN79yg8SV+DReG5gukdihV
-SIibvDgEsFygGg7NAH7jg57RMCAF+QJxC7CmsvgOsF2w/cC6XGWcIP/bpswYKXnJurBe8tEKSilL
-MB7EmJl8Qzp1Aw99Rrp9e/T+LGASYLRhTPUCKaGl8BCTH9oiDtir+eja/ne2TogR4/1fd+93ejmt
-Y3IkW084PGCs/cSZ5YhRGX9h9M1ZNb19Or7vTitwYtXYt8s6Qk8/hnZPl8+cOXpAGX2kQWHh1QFK
-slyRj0G5uQjFtz5E0V32z5ZrjJvzEt7AUO1yaIR+Vz9aqpCzmFOxoc8vmJoOGtyPJuaZl74rDXfU
-1vjRmBNtyTGSjDwTMpv8+eoAXOUmyHVIopnFFaTKrFAbFfweyZNKgdTMOi8P23zVfcNrnQRqI8qr
-Cs0cwnoEWaGAk0Tz1xPiemRXrwLXSUZ+FkX/yBBq5k1arxevwCscwXMnNpN2gJOHbj/pDnMfxNu7
-CrpAsVJ8R1ZZMM67xMgzFEC2TIOw2mAo9WoidbANoW7wbEGtn4dOxqBnK8vln5ooyn3e94ID
+AcLBcwQAAQoAHRYhBHCftZeyXSJlNBvC+h+HHdMBlPLtBQJobSJmAAoJEB+HHdMBlPLtnggQAKQG
+awEmnILtfqQLCg6AoJznnN2Hg7gHaCXgW1rxkGqZ7sdeSHNtNwdLukRomeP2PgwPthjYXHDb9Uqr
+hmKwkaM7PhXaKvA3WEFvwzqod9EQxLCvLV/R+4kmtANI+RwjpK94St4931MZ6BOsQQkWgPFq48DL
+bBzprIAkAnk1UQYgXxrRxvXR3LsvdiEiaq8B9HfZqsF2igIZhO1Ohw3PN9nIfGpoCAeEaaZbqGtD
+4WYL+lgLcdyxZ49ci2jDAoVkBldH3MN95H9N6My/UB7mBlWYZGxogi3MY+YmklXK0CLDrj/b5pmP
+dKOyGgn1hUEdNSRFYJCy+8ZU8incL7NFI9NbS5KRjjrLw0oPcUf1vDr5r4v5sudd84vH5AZeZFXE
+779kmOqjbT3PBrxk7xVheWUfVeSNUKOMZm1qGjXr6aWINTzfn6fHzTgqo366YlE4ZUu3ndCaqt3l
+nWnAJCXqXsmPVOWmynLDATlhy3uCY7cWxJ08HiGUzwoPVLzpDj4CDGi3eUCoFfcz2g2Bsy0TDZnT
+ZV00fQUvXbOfzDbJ4qZAGpzv6Bx0QFfcTGT4EZSUP6Uh0GUKS8ayhkrO+2e1ZVe1o7wNeSlLWMTU
+rlr+iyI2Ahf40HK7NVsgSJowJXIbpLvMgo2EtAz8Mko8thAV5TiZfPLET+sVxp0KXIkkfwZg
