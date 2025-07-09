@@ -284,4 +284,4 @@ $ snap get <your-account-id>/network/control-proxy -d
 
 When you get the confdb view, snapd automatically called the `load-view-proxy-control` hook to populate the confdb view. It read from `~/network.env`, parsed the proxy settings, and populated the confdb view with the external configuration.
 
-🎉 **Congratulations!** You've successfully integrated external configuration sources with confdb using ephemeral data.
+🎉 **Congratulations!** You've successfully integrated external configuration sources with confdb.
