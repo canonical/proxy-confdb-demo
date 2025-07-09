@@ -511,9 +511,9 @@ $ sudo snap run --shell net-ctrl.sh
 
 ## What's Next?
 
-🎉 You've successfully completed the demo! What next?
+🎉 **Congratulations!** You've successfully completed the demo!
 
-Learn how to integrate confdbs with external configuration sources using **[Ephemeral Data](./docs/ephemeral-data.md)**. This advanced pattern shows how to automatically sync confdb settings with external sources.
+What next? Learn how to integrate confdbs with external configuration sources using **[Ephemeral Data](./docs/ephemeral-data.md)**. This advanced pattern shows how to automatically sync confdb views with external sources.
 
 ## Addendum
 
