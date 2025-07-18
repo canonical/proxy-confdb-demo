@@ -611,9 +611,10 @@ $ docker logs -f squid-container
 1742891290.837   1127 172.17.0.1 TCP_TUNNEL/200 4433 CONNECT example.com:443 - HIER_DIRECT/96.7.128.198 -
 ```
 
-### Further Reading
+## Further Reading
 
 - [Configure with confdb](https://snapcraft.io/docs/configure-with-confdb)
+- [Confdb configuration mechanism](https://snapcraft.io/docs/confdb-configuration-management)
 - [confdb-schema assertion](https://documentation.ubuntu.com/core/reference/assertions/confdb-schema/)
 - [confdb interface](https://snapcraft.io/docs/confdb-interface)
 - [Ephemeral Data](./docs/ephemeral-data.md)
