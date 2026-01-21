@@ -289,8 +289,10 @@ The commands take the form:
   - `snapctl get --view :<view-name> [<dotted.path>] [-d]`
 
 ```console
-$ sudo net-ctrl.sh -c 'snapctl set --view :proxy-control https.url=https://proxy.example.com'
-$ sudo net-ctrl.sh -c 'snapctl set --view :proxy-control ftp.url=ftp://proxy.example.com'
+$ sudo snap run --shell net-ctrl
+# snapctl set --view :proxy-control https.url=https://proxy.example.com
+# snapctl set --view :proxy-control ftp.url=ftp://proxy.example.com
+# exit
 
 $ snap run --shell browser
 # snapctl get --view :proxy-observe
@@ -316,6 +318,7 @@ $ snap run --shell browser
     ],
     "url": "https://proxy.example.com"
 }
+# exit
 ```
 
 #### With `snap set`
@@ -325,13 +328,13 @@ The commands take the form:
   - `snap get <your-account-id>/<confdb-schema>/<view> [<dotted.path>] [-d]`
 
 ```console
-$ snap set <your-account-id>/network/control-proxy 'https.bypass=["https://127.0.0.1", "https://localhost"]'
+$ sudo snap set <your-account-id>/network/control-proxy 'https.bypass=["https://127.0.0.1", "https://localhost"]'
 
-$ snap get <your-account-id>/network/observe-proxy ftp
+$ sudo snap get <your-account-id>/network/observe-proxy ftp
 Key         Value
 ftp.bypass  [*://*.company.internal]
 ftp.url     ftp://proxy.example.com
-$ snap get <your-account-id>/network/observe-proxy ftp -d
+$ sudo snap get <your-account-id>/network/observe-proxy ftp -d
 {
     "ftp": {
         "bypass": [
@@ -340,7 +343,7 @@ $ snap get <your-account-id>/network/observe-proxy ftp -d
         "url": "ftp://proxy.example.com"
     }
 }
-$ snap get <your-account-id>/network/control-proxy ftp.url
+$ sudo snap get <your-account-id>/network/control-proxy ftp.url
 ftp://proxy.example.com
 ```
 
@@ -399,7 +402,7 @@ $ sudo curl --unix-socket /run/snapd.socket "http://localhost/v2/changes/2512" -
     "spawn-time": "2025-03-25T12:50:25.159691967+03:00",
     "ready-time": "2025-03-25T12:50:25.15971973+03:00",
     "data": {
-      "confdb-data": {
+      "values": {
         "ftp": {
           "bypass": [
             "*://*.company.internal"
@@ -412,7 +415,7 @@ $ sudo curl --unix-socket /run/snapd.socket "http://localhost/v2/changes/2512" -
             "https://localhost",
             "*://*.company.internal"
           ],
-          "url": "http://localhost:3128/"
+          "url": "https://proxy.example.com"
         }
       }
     }
