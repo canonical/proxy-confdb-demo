@@ -532,9 +532,17 @@ What next? Learn how to integrate confdbs with external configuration sources us
 
 ### Creating a confdb-schema Assertion by Hand
 
-Create a `network-confdb-schema.json` file and put your assertion there. The `body` must be in a _very specific_ format so run your json through `jq` like so to format it: `echo '{...}' | jq -S | jq -sR`.
+Writing assertion JSON by hand is painful because the `body` field requires escaped JSON. We recommend using YAML which supports comments and multi-line strings, then converting to JSON with `yq`.
+
+An example YAML file is provided in this repository: [`network-confdb-schema.yaml`](./network-confdb-schema.yaml)
 
 #### Prerequisites
+
+Install `yq` ([installation options](https://github.com/mikefarah/yq?tab=readme-ov-file#install)):
+
+```console
+$ sudo snap install yq
+```
 
 If you do not have any snapcraft keys, create one and register it with the Store.
 
@@ -552,9 +560,19 @@ $ snapcraft create-key <key-name>
 $ snapcraft register-key <key-name>
 ```
 
-#### Sign & Acknowledge
+#### Edit, Sign & Acknowledge
 
-Next, we'll sign the assertion, save the signed version in a `.assert` file, and finally acknowledge it.
+First, edit the YAML file to replace the placeholders with your actual values:
+- `<your-account-id>`: your Store account ID
+- `<timestamp>`: current UTC timestamp (run `date -Iseconds --utc`)
+
+Then convert the YAML file to JSON:
+
+```console
+$ yq -o=json network-confdb-schema.yaml > network-confdb-schema.json
+```
+
+Next, sign the assertion and acknowledge it:
 
 ```console
 $ snap sign -k <key-name> network-confdb-schema.json > network-confdb-schema.assert
