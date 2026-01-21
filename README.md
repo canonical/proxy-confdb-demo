@@ -180,15 +180,19 @@ plugs:
     view: network/observe-proxy
 ```
 
-> [!Note]
+> [!NOTE]
 > For observer/reader snaps, the role is implicit so you don't have to specify it.
 
 > [!IMPORTANT]
-> The `account` field in the snapcraft.yaml files must match your Store account ID. Replace `<your-account-id>` with your actual account ID (found via `snapcraft whoami`).
+> The `account` field in each snap's `snapcraft.yaml` must match the `account-id` in your confdb-schema assertion. Update the `account` field in `net-ctrl/snap/snapcraft.yaml` and `browser/snap/snapcraft.yaml` to use your own Store account ID (found via `snapcraft whoami`).
 
 ### Create a `confdb-schema` Assertion
 
-The confdbs feature is currently behind an experimental flag and you need to run `snap set system experimental.confdb=true` to enable it.
+The confdbs feature is currently behind an experimental flag. Enable it first:
+
+```console
+$ sudo snap set system experimental.confdb=true
+```
 
 > [!NOTE]
 > Since confdb is an experimental feature, the implementation details may change as development progresses.
