@@ -1,6 +1,6 @@
 name: net-ctrl
 base: core24
-version: "0.1"
+version: "0.2"
 summary: The custodian of the network confdb.
 description: |
   The custodian of the network confdb.
@@ -25,7 +25,7 @@ parts:
     plugin: python
     source: .
     python-packages:
-      - validators==0.34.0
+      - validators==0.35.0
     override-prime: |
       snapcraftctl prime
       mkdir -p ${SNAPCRAFT_PRIME}/bin

@@ -3,17 +3,18 @@
     "authority-id":  "f22PSauKuNkwQTM9Wz67ZCjNACuSjjhN",
     "account-id": "f22PSauKuNkwQTM9Wz67ZCjNACuSjjhN",
     "name": "network",
+    "revision": "2",
     "views": {
         "control-proxy": {
             "rules": [
                 {
                     "request": "{protocol}",
                     "storage": "proxy.{protocol}",
+                    "access": "read-write",
                     "content": [
                         {
                             "request": "url",
-                            "storage": "url",
-                            "access": "read-write"
+                            "storage": "url"
                         },
                         {
                             "request": "bypass",
@@ -38,6 +39,6 @@
             ]
         }
     },
-    "body": "{\n  \"storage\": {\n    \"aliases\": {\n      \"protocol\": {\n        \"choices\": [\n          \"http\",\n          \"https\",\n          \"ftp\"\n        ],\n        \"type\": \"string\"\n      }\n    },\n    \"schema\": {\n      \"proxy\": {\n        \"keys\": \"string\",\n        \"values\": {\n          \"schema\": {\n            \"bypass\": {\n              \"type\": \"array\",\n              \"unique\": true,\n              \"values\": \"string\"\n            },\n            \"url\": \"string\"\n          }\n        }\n      }\n    }\n  }\n}",
+    "body": "{\n  \"storage\": {\n    \"aliases\": {\n      \"protocol\": {\n        \"choices\": [\n          \"http\",\n          \"https\",\n          \"ftp\"\n        ],\n        \"type\": \"string\"\n      }\n    },\n    \"schema\": {\n      \"proxy\": {\n        \"keys\": \"${protocol}\",\n        \"values\": {\n          \"schema\": {\n            \"bypass\": {\n              \"type\": \"array\",\n              \"unique\": true,\n              \"values\": \"string\"\n            },\n            \"url\": \"string\"\n          }\n        }\n      }\n    }\n  }\n}",
     "timestamp": "2024-10-25T13:31:20+00:00"
 }

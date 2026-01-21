@@ -1,6 +1,6 @@
 name: browser
 base: core24
-version: "0.1"
+version: "0.2"
 summary: Snap that consumes proxy config.
 description: |
   Snap that consumes proxy config.
@@ -20,8 +20,8 @@ parts:
     parse-info:
       - setup.py
     python-packages:
-      - requests==2.32.3
-      - html2text==2024.2.26
+      - requests==2.32.5
+      - html2text==2025.4.15
       - connect-markdown-renderer==3.0.0
 
 apps:

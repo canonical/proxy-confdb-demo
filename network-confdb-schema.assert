@@ -1,5 +1,6 @@
 type: confdb-schema
 authority-id: f22PSauKuNkwQTM9Wz67ZCjNACuSjjhN
+revision: 2
 account-id: f22PSauKuNkwQTM9Wz67ZCjNACuSjjhN
 name: network
 timestamp: 2024-10-25T13:31:20+00:00
@@ -7,9 +8,9 @@ views:
   control-proxy:
     rules:
       -
+        access: read-write
         content:
           -
-            access: read-write
             request: url
             storage: url
           -
@@ -27,7 +28,7 @@ views:
         access: read
         request: ftp
         storage: proxy.ftp
-body-length: 482
+body-length: 487
 sign-key-sha3-384: xkd_Y2ay5N2Uo14v_wsCtfVJYLAVbJgxbiKM8Ne4mZBflaROriZgk2nb5i9Oebum
 
 {
@@ -44,7 +45,7 @@ sign-key-sha3-384: xkd_Y2ay5N2Uo14v_wsCtfVJYLAVbJgxbiKM8Ne4mZBflaROriZgk2nb5i9Oe
     },
     "schema": {
       "proxy": {
-        "keys": "string",
+        "keys": "${protocol}",
         "values": {
           "schema": {
             "bypass": {
@@ -60,13 +61,13 @@ sign-key-sha3-384: xkd_Y2ay5N2Uo14v_wsCtfVJYLAVbJgxbiKM8Ne4mZBflaROriZgk2nb5i9Oe
   }
 }
 
-AcLBcwQAAQoAHRYhBHCftZeyXSJlNBvC+h+HHdMBlPLtBQJobSJmAAoJEB+HHdMBlPLtnggQAKQG
-awEmnILtfqQLCg6AoJznnN2Hg7gHaCXgW1rxkGqZ7sdeSHNtNwdLukRomeP2PgwPthjYXHDb9Uqr
-hmKwkaM7PhXaKvA3WEFvwzqod9EQxLCvLV/R+4kmtANI+RwjpK94St4931MZ6BOsQQkWgPFq48DL
-bBzprIAkAnk1UQYgXxrRxvXR3LsvdiEiaq8B9HfZqsF2igIZhO1Ohw3PN9nIfGpoCAeEaaZbqGtD
-4WYL+lgLcdyxZ49ci2jDAoVkBldH3MN95H9N6My/UB7mBlWYZGxogi3MY+YmklXK0CLDrj/b5pmP
-dKOyGgn1hUEdNSRFYJCy+8ZU8incL7NFI9NbS5KRjjrLw0oPcUf1vDr5r4v5sudd84vH5AZeZFXE
-779kmOqjbT3PBrxk7xVheWUfVeSNUKOMZm1qGjXr6aWINTzfn6fHzTgqo366YlE4ZUu3ndCaqt3l
-nWnAJCXqXsmPVOWmynLDATlhy3uCY7cWxJ08HiGUzwoPVLzpDj4CDGi3eUCoFfcz2g2Bsy0TDZnT
-ZV00fQUvXbOfzDbJ4qZAGpzv6Bx0QFfcTGT4EZSUP6Uh0GUKS8ayhkrO+2e1ZVe1o7wNeSlLWMTU
-rlr+iyI2Ahf40HK7NVsgSJowJXIbpLvMgo2EtAz8Mko8thAV5TiZfPLET+sVxp0KXIkkfwZg
+AcLBcwQAAQoAHRYhBHCftZeyXSJlNBvC+h+HHdMBlPLtBQJpaiUeAAoJEB+HHdMBlPLt99IQAKah
+FTyjpNrEW32Sh4hGtPLUXZjP4upgkcHnGCULyQl0fn11rrO1yS87dyGXs457alsvLiVjH14oHjJk
+OYpUFqsDADZR9LET2BkMXAcu1yIDfestoBnWWIEQTjx5Qb9iD0O9S3t7rBGvNG7dCIQ+QJIJxj/3
+MROQ8r/Vz2JQ9bG4OVb+GohCKlUQ61AD7LpAwbrod2E/1A1LcbJe5OxjOGPyk+fYt9eJn1yN5IBo
+BE5Itr+Jy+YL10SD4bI+v6M5Y2nST+Dnr0rQgIWax+tF9n6AgZtpj6/yZw3LrDH8+NNPr/XfBa6C
+0SnEx16fqn2Zvus5egOobn/kYN1jUweuTAtg120g2XKcIEfSlDIPRDFD8hWyg5SxRkwcRttqO97m
+GjGX0NelBa+QnVkowjJqVrdB1ahHqdax74e5/odyQtTxsytuco9dlS4CYE9agqtfm9j0B9l+D5Zg
+nGYPWuuB/TWvymNjJiwTIRevsb5PCGSP6qWJM1oP6G7R5UHjMNGKSay+BctMtwlPfOUHa8894Uch
+1STdWnyLnGK0MDIjuAi0ZrL2QFm8UDxe8o62fJ8LqG8VlOxq/I9dnne6uUUon/v+jWGKiIqv5rIL
+jmivw1RVL+rF7R4SliY71VzuHaf84Lg8T4FLJSvL0vRqzJA3OSR5KUkLX+Scuzf2GFFyxNgX
