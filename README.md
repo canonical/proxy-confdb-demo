@@ -1,6 +1,6 @@
 # A Confdb Demo
 
-Confdbs provide a new mechanism for configuring snaps in the snappy ecosystem. They enable configuration sharing between snaps while ensuring proper access control.
+Confdb provides a new mechanism for configuring snaps in the snappy ecosystem. They enable configuration sharing between snaps while ensuring proper access control.
 
 For this demo, we'll set up a `network` confdb to share proxy configuration between snaps.
 
@@ -33,7 +33,7 @@ In this workaround, we also have an additional snap (`net-ctrl`) that we set sna
 
 ### Intro
 
-Confdbs separate snaps from their configuration, enabling easier cross-snap configuration sharing. A confdb is defined using a [`confdb-schema` assertion](https://documentation.ubuntu.com/core/reference/assertions/confdb-schema/) which looks like this:
+Confdb separates snaps from their configuration, enabling easier cross-snap configuration sharing. A confdb is defined using a [`confdb-schema` assertion](https://documentation.ubuntu.com/core/reference/assertions/confdb-schema/) which looks like this:
 
 > [!IMPORTANT]
 > When modifying your views or schema, you must bump the `revision` number. Forgetting to increment it is a common mistake: the assertion will be acknowledged, but your changes won't take effect.
@@ -145,7 +145,7 @@ In a diagram, this setup looks like this:
 ![With a confdb](docs/media/with-confdb.png)
 
 The `net-ctrl` snap acts as the custodian of the confdb view. A custodian snap can validate the view data being written using [hooks](https://snapcraft.io/docs/supported-snap-hooks) such as `change-view-<plug>`.\
-The other snaps are called "observers" or "readers" of the confdb view. They can use `observe-view-<plug>` hooks to watch changes to the view. This could be useful for the snaps to update their own configuration and/or restart runnning services after configuration changes.\
+The other snaps are called "observers" or "readers" of the confdb view. They can use `observe-view-<plug>` hooks to watch changes to the view. This could be useful for the snaps to update their own confdb configuration and/or restart runnning services after configuration changes.\
 A snap can be an observer and/or custodian of many different views.
 
 The roles are defined as plugs in the respective snap's `snapcraft.yaml` like so:
@@ -188,7 +188,7 @@ plugs:
 
 ### Create a `confdb-schema` Assertion
 
-The confdbs feature is currently behind an experimental flag. Enable it first:
+The confdb feature is currently behind an experimental flag. Enable it first:
 
 ```console
 $ sudo snap set system experimental.confdb=true
@@ -530,7 +530,7 @@ $ sudo snap run --shell net-ctrl.sh
 
 🎉 **Congratulations!** You've successfully completed the demo!
 
-What next? Learn how to integrate confdbs with external configuration sources using **[ephemeral data](./docs/ephemeral-data.md)**. This advanced pattern shows how to automatically sync confdb views with external sources.
+What next? Learn how to integrate confdb with external configuration sources using **[ephemeral data](./docs/ephemeral-data.md)**. This advanced pattern shows how to automatically sync confdb views with external sources.
 
 ## Addendum
 
