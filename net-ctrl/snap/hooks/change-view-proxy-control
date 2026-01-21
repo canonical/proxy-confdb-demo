@@ -32,5 +32,7 @@ for protocol, proxy_config in config.items():
 
         # save changes
         bypass_json = json.dumps(bypass, separators=(',', ':'))
-        cmd = f"snapctl set --view -t :proxy-control {protocol}.bypass={bypass_json}"
-        subprocess.run(cmd.split())
+        subprocess.run([
+            "snapctl", "set", "--view", "-t", ":proxy-control",
+            f"{protocol}.bypass={bypass_json}"
+        ])

@@ -35,6 +35,9 @@ In this workaround, we also have an additional snap (`net-ctrl`) that we set sna
 
 Confdbs separate snaps from their configuration, enabling easier cross-snap configuration sharing. A confdb is defined using a [`confdb-schema` assertion](https://documentation.ubuntu.com/core/reference/assertions/confdb-schema/) which looks like this:
 
+> [!IMPORTANT]
+> When modifying your views or schema, you must bump the `revision` number. Forgetting to increment it is a common mistake: the assertion will be acknowledged, but your changes won't take effect.
+
 ```yaml
 type: confdb-schema
 authority-id: <your-account-id>
@@ -180,6 +183,9 @@ plugs:
 > [!Note]
 > For observer/reader snaps, the role is implicit so you don't have to specify it.
 
+> [!IMPORTANT]
+> The `account` field in the snapcraft.yaml files must match your Store account ID. Replace `<your-account-id>` with your actual account ID (found via `snapcraft whoami`).
+
 ### Create a `confdb-schema` Assertion
 
 The confdbs feature is currently behind an experimental flag and you need to run `snap set system experimental.confdb=true` to enable it.
@@ -187,7 +193,10 @@ The confdbs feature is currently behind an experimental flag and you need to run
 > [!NOTE]
 > Since confdb is an experimental feature, the implementation details may change as development progresses.
 
-You can create a confdb-schema assertion with `snapcraft` which launches an editor to type the assertion in, then it signs the assertion & uploads it to the Store. Alternatively, you can do this "by hand" where you sign it yourself (see [this addendum](#creating-a-confdb-schema-assertion-by-hand)).
+You can create a confdb-schema assertion with `snapcraft` which launches an editor to type the assertion in, then it signs the assertion & uploads it to the Store.
+
+> [!TIP]
+> Prefer to sign and acknowledge assertions locally without uploading to the Store? See [Creating a confdb-schema Assertion by Hand](#creating-a-confdb-schema-assertion-by-hand).
 
 #### Prerequisites
 
@@ -376,13 +385,13 @@ $ sudo curl --unix-socket /run/snapd.socket \
   "result": null,
   "change": "2512"
 }
-$ sudo curl --unix-socket /run/snapd.socket "http://localhost/v2/changes/2511" -s | jq
+$ sudo curl --unix-socket /run/snapd.socket "http://localhost/v2/changes/2512" -s | jq
 {
   "type": "sync",
   "status-code": 200,
   "status": "OK",
   "result": {
-    "id": "2511",
+    "id": "2512",
     "kind": "get-confdb",
     "summary": "Get confdb through \"<your-account-id>/network/observe-proxy\"",
     "status": "Done",
