@@ -1,6 +1,6 @@
 # A Confdb Demo
 
-Confdbs provide a new mechanism for configuring snaps in the snappy ecosystem. They enable configuration sharing between snaps while maintaining security and proper access control.
+Confdb provides a new mechanism for configuring snaps in the snappy ecosystem. They enable configuration sharing between snaps while ensuring proper access control.
 
 For this demo, we'll set up a `network` confdb to share proxy configuration between snaps.
 
@@ -25,21 +25,24 @@ In this workaround, we'll create an additional snap (`net-ctrl`) that will store
 
 ### _snapd-control_ interface
 
-In this workaround, we also have an additional snap (`net-ctrl`) that we set snap config on (with `snap set`). The other snaps then connect to the [snapd-control](https://snapcraft.io/docs/snapd-control-interface) interface and consume this configuration through the snapd API endpoint [`/v2/snaps/net-ctrl/conf`](https://snapcraft.io/docs/snapd-api#heading--snaps-name-conf). This is a BAD solution as it effectively grants these snaps `root` access to your device which isn't safe.
+In this workaround, we also have an additional snap (`net-ctrl`) that we set snap configuration on (with `snap set`). The other snaps then connect to the [snapd-control](https://snapcraft.io/docs/snapd-control-interface) interface and consume this configuration through the [snapd options endpoint `/v2/snaps/net-ctrl/conf`](https://snapcraft.io/docs/snapd-api#heading--snaps-name-conf). This is a BAD solution as it effectively grants these snaps `root` access to your device which isn't safe.
 
 ![With snapd-control interface](docs/media/with-snapd-control.png)
 
-## Using Confdbs
+## Using Confdb
 
 ### Intro
 
-Confdbs separate snaps from their configuration, enabling easier cross-snap configuration sharing. A confdb is defined using a [`confdb-schema` assertion](https://documentation.ubuntu.com/core/reference/assertions/confdb-schema/) which looks like this:
+Confdb separates snaps from their configuration, enabling easier cross-snap configuration sharing. A confdb is defined using a [`confdb-schema` assertion](https://documentation.ubuntu.com/core/reference/assertions/confdb-schema/) which looks like this:
+
+> [!IMPORTANT]
+> When modifying your views or schema, you must bump the `revision` number. Forgetting to increment it is a common mistake: the assertion will be acknowledged, but your changes won't take effect.
 
 ```yaml
 type: confdb-schema
 authority-id: <your-account-id>
 account-id: <your-account-id>
-revision: <N> # Bump this to <N+1> after changing the assertion
+revision: <N> # Bump the revision number to <N+1> after updating the assertion
 name: <string>
 views:
   <view-name>:
@@ -70,40 +73,40 @@ timestamp: <date -Iseconds --utc>
 <signature>
 ```
 
-Snaps do not act on the raw configuration in the storage directly. This is mediated by confdb views which allows the views & storage to evolve independently.
+Snaps do not act on the raw configuration in the storage directly. This is mediated by confdb views, allowing the views & storage to evolve independently.
 
-We'll create two views: `control-proxy` and `observe-proxy`. `control-proxy` allows for `read-write` access but `observe-proxy` only allows `read` access.
+We'll create two views: `control-proxy` for managing proxy settings, and `observe-proxy` for consuming them. The former has `read-write` access while the latter is `read`-only.
 
 ```yaml
 views:
   control-proxy:
     rules:
       -
-        request: {protocol}
-        storage: proxy.{protocol}
+        access: read-write
         content:
           -
             request: url
             storage: url
-            access: read-write
           -
             request: bypass
             storage: bypass
+        request: {protocol}
+        storage: proxy.{protocol}
   observe-proxy:
     rules:
       -
+        access: read
         request: https
         storage: proxy.https
-        access: read
       -
+        access: read
         request: ftp
         storage: proxy.ftp
-        access: read
 ```
 
 Each view has a set of rules that hold the `request` path, the underlying `storage`, and the `access` method. You can use placeholders in the `request` and `storage`. In the example above, `{protocol}` is a placeholder which maps to `proxy.{protocol}`. For instance, `https` maps to `proxy.https`.
 
-The stored config respects the following schema:
+The stored configuration respects the following schema:
 
 ```json
 {
@@ -120,7 +123,7 @@ The stored config respects the following schema:
     },
     "schema": {
       "proxy": {
-        "keys": "string",
+        "keys": "${protocol}",
         "values": {
           "schema": {
             "bypass": {
@@ -142,8 +145,8 @@ In a diagram, this setup looks like this:
 ![With a confdb](docs/media/with-confdb.png)
 
 The `net-ctrl` snap acts as the custodian of the confdb view. A custodian snap can validate the view data being written using [hooks](https://snapcraft.io/docs/supported-snap-hooks) such as `change-view-<plug>`.\
-The other snaps are called "observers" or "readers" of the confdb view. They can use `observe-view-<plug>` hooks to watch changes to the view. This could be useful for the snaps to update their own config and/or restart runnning services after config changes.\
-A snap can be an observer and custodian of many different views.
+The other snaps are called "observers" or "readers" of the confdb view. They can use `observe-view-<plug>` hooks to watch changes to the view. This could be useful for the snaps to update their own confdb configuration and/or restart runnning services after configuration changes.\
+A snap can be an observer and/or custodian of many different views.
 
 The roles are defined as plugs in the respective snap's `snapcraft.yaml` like so:
 
@@ -177,17 +180,27 @@ plugs:
     view: network/observe-proxy
 ```
 
-> [!Note]
+> [!NOTE]
 > For observer/reader snaps, the role is implicit so you don't have to specify it.
+
+> [!IMPORTANT]
+> The `account` field in each snap's `snapcraft.yaml` must match the `account-id` in your confdb-schema assertion. Update the `account` field in `net-ctrl/snap/snapcraft.yaml` and `browser/snap/snapcraft.yaml` to use your own Store account ID (found via `snapcraft whoami`).
 
 ### Create a `confdb-schema` Assertion
 
-The confdbs feature is currently behind an experimental flag and you need to run `snap set system experimental.confdb=true` to enable it.
+The confdb feature is currently behind an experimental flag. Enable it first:
+
+```console
+$ sudo snap set system experimental.confdb=true
+```
 
 > [!NOTE]
 > Since confdb is an experimental feature, the implementation details may change as development progresses.
 
-You can create a confdb-schema assertion with `snapcraft` which launches an editor to type the assertion in, then it signs the assertion & uploads it to the Store. Alternatively, you can do this "by hand" where you sign it yourself (see [this addendum](#creating-a-confdb-schema-assertion-by-hand)).
+You can create a confdb-schema assertion with `snapcraft` which launches an editor to type the assertion in, then it signs the assertion & uploads it to the Store.
+
+> [!TIP]
+> Prefer to sign and acknowledge assertions locally without uploading to the Store? See [Creating a confdb-schema Assertion by Hand](#creating-a-confdb-schema-assertion-by-hand).
 
 #### Prerequisites
 
@@ -215,7 +228,7 @@ Next, run `snapcraft edit-confdb-schema` which launches you into an editor where
 $ snapcraft edit-confdb-schema <your-account-id> network --key-name=<key-name>
 Successfully created revision 1 for 'network'.
 
-$ snapcraft list-confdb-schemas
+$ snapcraft confdb-schemas
 Account ID                        Name      Revision  When
 <your-account-id>                 network          1  2024-10-2
 ```
@@ -228,22 +241,22 @@ Next, we'll build and install the `net-ctrl` and `browser` snaps in this reposit
 
 ```console
 $ cd net-ctrl
-$ snapcraft
-Packed net-ctrl_0.1_amd64.snap
+$ snapcraft pack
+Packed net-ctrl_0.2_amd64.snap
 
-$ snap install net-ctrl_0.1_amd64.snap --dangerous
-net-ctrl 0.1 installed
+$ sudo snap install net-ctrl_0.2_amd64.snap --dangerous
+net-ctrl 0.2 installed
 ```
 
 #### browser snap
 
 ```console
 $ cd browser
-$ snapcraft
-Packed browser_0.1_amd64.snap
+$ snapcraft pack
+Packed browser_0.2_amd64.snap
 
-$ snap install browser_0.1_amd64.snap --dangerous
-browser 0.1 installed
+$ sudo snap install browser_0.2_amd64.snap --dangerous
+browser 0.2 installed
 ```
 
 ### Interfaces
@@ -251,14 +264,15 @@ browser 0.1 installed
 Next, we'll connect the [interfaces](https://snapcraft.io/docs/confdb-interface) for both snaps.
 
 ```console
-$ snap connect net-ctrl:proxy-control
-$ snap connect net-ctrl:proxy-observe
+$ sudo snap connect net-ctrl:proxy-control
+$ sudo snap connect net-ctrl:proxy-observe
 $ snap connections net-ctrl
 Interface  Plug                    Slot     Notes
 confdb     net-ctrl:proxy-control  :confdb  manual
 confdb     net-ctrl:proxy-observe  :confdb  manual
+home       net-ctrl:home           :home    -
 
-$ snap connect browser:proxy-observe
+$ sudo snap connect browser:proxy-observe
 $ snap connections browser
 Interface  Plug                   Slot      Notes
 confdb     browser:proxy-observe  :confdb   manual
@@ -268,7 +282,7 @@ network    browser:network        :network  -
 > [!NOTE]
 > For snaps installed from the Store, if the assertion's `account-id` is the same as the snap publisher, the interfaces should be connected automatically.
 
-### Setting & Reading the Config
+### Setting & Reading Configuration
 
 #### With `snapctl`
 
@@ -279,8 +293,10 @@ The commands take the form:
   - `snapctl get --view :<view-name> [<dotted.path>] [-d]`
 
 ```console
-$ sudo net-ctrl.sh -c 'snapctl set --view :proxy-control https.url=https://proxy.example.com'
-$ sudo net-ctrl.sh -c 'snapctl set --view :proxy-control ftp.url=ftp://proxy.example.com'
+$ sudo snap run --shell net-ctrl
+# snapctl set --view :proxy-control https.url=https://proxy.example.com
+# snapctl set --view :proxy-control ftp.url=ftp://proxy.example.com
+# exit
 
 $ snap run --shell browser
 # snapctl get --view :proxy-observe
@@ -306,6 +322,7 @@ $ snap run --shell browser
     ],
     "url": "https://proxy.example.com"
 }
+# exit
 ```
 
 #### With `snap set`
@@ -315,13 +332,13 @@ The commands take the form:
   - `snap get <your-account-id>/<confdb-schema>/<view> [<dotted.path>] [-d]`
 
 ```console
-$ snap set <your-account-id>/network/control-proxy 'https.bypass=["https://127.0.0.1", "https://localhost"]'
+$ sudo snap set <your-account-id>/network/control-proxy 'https.bypass=["https://127.0.0.1", "https://localhost"]'
 
-$ snap get <your-account-id>/network/observe-proxy ftp
+$ sudo snap get <your-account-id>/network/observe-proxy ftp
 Key         Value
 ftp.bypass  [*://*.company.internal]
 ftp.url     ftp://proxy.example.com
-$ snap get <your-account-id>/network/observe-proxy ftp -d
+$ sudo snap get <your-account-id>/network/observe-proxy ftp -d
 {
     "ftp": {
         "bypass": [
@@ -330,7 +347,7 @@ $ snap get <your-account-id>/network/observe-proxy ftp -d
         "url": "ftp://proxy.example.com"
     }
 }
-$ snap get <your-account-id>/network/control-proxy ftp.url
+$ sudo snap get <your-account-id>/network/control-proxy ftp.url
 ftp://proxy.example.com
 ```
 
@@ -375,13 +392,13 @@ $ sudo curl --unix-socket /run/snapd.socket \
   "result": null,
   "change": "2512"
 }
-$ sudo curl --unix-socket /run/snapd.socket "http://localhost/v2/changes/2511" -s | jq
+$ sudo curl --unix-socket /run/snapd.socket "http://localhost/v2/changes/2512" -s | jq
 {
   "type": "sync",
   "status-code": 200,
   "status": "OK",
   "result": {
-    "id": "2511",
+    "id": "2512",
     "kind": "get-confdb",
     "summary": "Get confdb through \"<your-account-id>/network/observe-proxy\"",
     "status": "Done",
@@ -389,7 +406,7 @@ $ sudo curl --unix-socket /run/snapd.socket "http://localhost/v2/changes/2511" -
     "spawn-time": "2025-03-25T12:50:25.159691967+03:00",
     "ready-time": "2025-03-25T12:50:25.15971973+03:00",
     "data": {
-      "confdb-data": {
+      "values": {
         "ftp": {
           "bypass": [
             "*://*.company.internal"
@@ -402,7 +419,7 @@ $ sudo curl --unix-socket /run/snapd.socket "http://localhost/v2/changes/2511" -
             "https://localhost",
             "*://*.company.internal"
           ],
-          "url": "http://localhost:3128/"
+          "url": "https://proxy.example.com"
         }
       }
     }
@@ -422,7 +439,7 @@ Snaps can implement hooks to manage and observe confdb views. The hooks are `cha
 
 ### browser/observe-view-proxy-observe (`observe-view-<plug>`)
 
-This hook allows the browser snap to watch for changes to the `observe` proxy view. [The hook](./browser/snap/hooks/observe-view-proxy-observe) outputs the new config to `$SNAP_COMMON/new-config.json`.
+This hook allows the browser snap to watch for changes to the `observe` proxy view. [The hook](./browser/snap/hooks/observe-view-proxy-observe) outputs the new configuration to `$SNAP_COMMON/new-config.json`.
 
 ```console
 $ sudo net-ctrl.sh -c 'snapctl set --view :proxy-control https.url="http://localhost:3199/"'
@@ -513,15 +530,23 @@ $ sudo snap run --shell net-ctrl.sh
 
 🎉 **Congratulations!** You've successfully completed the demo!
 
-What next? Learn how to integrate confdbs with external configuration sources using **[ephemeral data](./docs/ephemeral-data.md)**. This advanced pattern shows how to automatically sync confdb views with external sources.
+What next? Learn how to integrate confdb with external configuration sources using **[ephemeral data](./docs/ephemeral-data.md)**. This advanced pattern shows how to automatically sync confdb views with external sources.
 
 ## Addendum
 
 ### Creating a confdb-schema Assertion by Hand
 
-Create a `network-confdb-schema.json` file and put your assertion there. The `body` must be in a _very specific_ format so run your json through `jq` like so to format it: `echo '{...}' | jq -S | jq -sR`.
+Writing assertion JSON by hand is painful because the `body` field requires escaped JSON. We recommend using YAML which supports comments and multi-line strings, then converting to JSON with `yq`.
+
+An example YAML file is provided in this repository: [`network-confdb-schema.yaml`](./network-confdb-schema.yaml)
 
 #### Prerequisites
+
+Install `yq` ([installation options](https://github.com/mikefarah/yq?tab=readme-ov-file#install)):
+
+```console
+$ sudo snap install yq
+```
 
 If you do not have any snapcraft keys, create one and register it with the Store.
 
@@ -539,13 +564,23 @@ $ snapcraft create-key <key-name>
 $ snapcraft register-key <key-name>
 ```
 
-#### Sign & Acknowledge
+#### Edit, Sign & Acknowledge
 
-Next, we'll sign the assertion, save the signed version in a `.assert` file, and finally acknowledge it.
+First, edit the YAML file to replace the placeholders with your actual values:
+- `<your-account-id>`: your Store account ID
+- `<timestamp>`: current UTC timestamp (run `date -Iseconds --utc`)
+
+Then convert the YAML file to JSON:
+
+```console
+$ yq -o=json network-confdb-schema.yaml > network-confdb-schema.json
+```
+
+Next, sign the assertion and acknowledge it:
 
 ```console
 $ snap sign -k <key-name> network-confdb-schema.json > network-confdb-schema.assert
-$ snap ack network-confdb-schema.assert
+$ sudo snap ack network-confdb-schema.assert
 ```
 
 ###### Errors You Might Encounter
@@ -558,14 +593,14 @@ To fetch and acknowledge your `account` assertion, run:
 
 ```console
 $ snap known --remote account account-id=<your-account-id> > /tmp/account.assert
-$ snap ack /tmp/account.assert
+$ sudo snap ack /tmp/account.assert
 ```
 
 To fetch and acknowledge the `account-key` assertion, run:
 
 ```console
 $ snap known --remote account-key public-key-sha3-384=<key-sha-digest> > /tmp/account-key.assert
-$ snap ack /tmp/account-key.assert
+$ sudo snap ack /tmp/account-key.assert
 ```
 
 > [!TIP]
@@ -584,7 +619,7 @@ Run the web proxy on a host (like `proxy.example.com`) or locally in a docker co
 $ docker run -d --name squid-container -e TZ=UTC -p 3128:3128 ubuntu/squid:5.2-22.04_beta
 ```
 
-Point the `http/https` proxy config to the web proxy and then call `browser` with a proxied URL:
+Point the `http/https` proxy configuration to the web proxy and then call `browser` with a proxied URL:
 
 ```console
 $ sudo net-ctrl.sh -c 'snapctl set --view :proxy-control https.url="http://localhost:3128/"'
@@ -618,5 +653,5 @@ $ docker logs -f squid-container
 - [confdb-schema assertion](https://documentation.ubuntu.com/core/reference/assertions/confdb-schema/)
 - [confdb interface](https://snapcraft.io/docs/confdb-interface)
 - [Ephemeral Data](./docs/ephemeral-data.md)
-- [Confdb API](./docs/confdb-api.md)
+- [Confdb APIs](./docs/confdb-apis.md)
 - SD208 Specification: confdb and views (Internal)

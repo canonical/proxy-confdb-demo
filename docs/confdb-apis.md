@@ -1,4 +1,4 @@
-# Confdb API
+# Confdb APIs
 
 ## Snapd's API
 

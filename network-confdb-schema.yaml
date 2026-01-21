@@ -1,0 +1,58 @@
+type: confdb-schema
+# Replace <your-account-id> with your Store account ID (from `snapcraft whoami`)
+authority-id: <your-account-id>
+account-id: <your-account-id>
+name: network
+revision: "1"  # Bump the revision number after updating the assertion
+# Update the timestamp when modifying the assertion (run: date -Iseconds --utc)
+timestamp: <timestamp>
+views:
+  control-proxy:
+    rules:
+      - request: "{protocol}"
+        storage: "proxy.{protocol}"
+        access: read-write
+        content:
+          - request: url
+            storage: url
+          - request: bypass
+            storage: bypass
+  observe-proxy:
+    rules:
+      - request: https
+        storage: proxy.https
+        access: read
+      - request: ftp
+        storage: proxy.ftp
+        access: read
+# The body is the storage schema as a JSON string
+body: |-
+  {
+    "storage": {
+      "aliases": {
+        "protocol": {
+          "choices": [
+            "http",
+            "https",
+            "ftp"
+          ],
+          "type": "string"
+        }
+      },
+      "schema": {
+        "proxy": {
+          "keys": "${protocol}",
+          "values": {
+            "schema": {
+              "bypass": {
+                "type": "array",
+                "unique": true,
+                "values": "string"
+              },
+              "url": "string"
+            }
+          }
+        }
+      }
+    }
+  }
