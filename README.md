@@ -356,7 +356,7 @@ ftp://proxy.example.com
 ```console
 $ sudo curl --unix-socket /run/snapd.socket \
   "http://localhost/v2/confdb/<your-account-id>/network/proxy-admin" \
-  -X PUT -d '{"https.bypass": ["https://127.0.0.1", "https://localhost"]}' -s | jq
+  -X PUT -d '{"values": {"https.bypass": ["https://127.0.0.1", "https://localhost"]}}' -s | jq
 {
   "type": "async",
   "status-code": 202,
