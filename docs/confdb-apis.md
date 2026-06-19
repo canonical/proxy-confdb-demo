@@ -2,7 +2,7 @@
 
 ## Snapd's API
 
-The API documentation is available [here](https://snapcraft.io/docs/snapd-api#heading--confdb).
+The API documentation is available [here](https://snapcraft.io/docs/reference/development/snapd-rest-api/#/AuthenticationRequired/setConfdb).
 
 ## Store's Confdb Schema API
 

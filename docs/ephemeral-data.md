@@ -288,4 +288,4 @@ When you get the confdb view, snapd automatically called the `load-view-network-
 
 ## Further Reading
 
-- [Confdb configuration mechanism > Ephemeral Data](https://snapcraft.io/docs/confdb-configuration-management#p-152801-ephemeral-data)
+- [Confdb configuration mechanism > Ephemeral Data](https://snapcraft.io/docs/explanation/how-snaps-work/confdb-configuration-mechanism/#ephemeral-data)

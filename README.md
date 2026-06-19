@@ -19,13 +19,13 @@ We'll look at several hacky workarounds to get around this and how using a confd
 
 ### _content_ interface
 
-In this workaround, we'll create an additional snap (`net-ctrl`) that will store the configuration in a file. It exposes this shared file to the other snaps over the [content interface](https://snapcraft.io/docs/content-interface).
+In this workaround, we'll create an additional snap (`net-ctrl`) that will store the configuration in a file. It exposes this shared file to the other snaps over the [content interface](https://snapcraft.io/docs/reference/interfaces/content-interface/).
 
 ![With content interface](docs/media/with-content-interface.png)
 
 ### _snapd-control_ interface
 
-In this workaround, we also have an additional snap (`net-ctrl`) that we set snap configuration on (with `snap set`). The other snaps then connect to the [snapd-control](https://snapcraft.io/docs/snapd-control-interface) interface and consume this configuration through the [snapd options endpoint `/v2/snaps/net-ctrl/conf`](https://snapcraft.io/docs/snapd-api#heading--snaps-name-conf). This is a BAD solution as it effectively grants these snaps `root` access to your device which isn't safe.
+In this workaround, we also have an additional snap (`net-ctrl`) that we set snap configuration on (with `snap set`). The other snaps then connect to the [snapd-control](https://snapcraft.io/docs/reference/interfaces/snapd-control-interface/) interface and consume this configuration through the [snapd options endpoint `/v2/snaps/net-ctrl/conf`](https://snapcraft.io/docs/reference/development/snapd-rest-api/#/AuthenticationRequired/getSnapConfig). This is a BAD solution as it effectively grants these snaps `root` access to your device which isn't safe.
 
 ![With snapd-control interface](docs/media/with-snapd-control.png)
 
@@ -144,7 +144,7 @@ In a diagram, this setup looks like this:
 
 ![With a confdb](docs/media/with-confdb.png)
 
-The `net-ctrl` snap acts as the custodian of the confdb view. A custodian snap can validate the view data being written using [hooks](https://snapcraft.io/docs/supported-snap-hooks) such as `change-view-<plug>`.\
+The `net-ctrl` snap acts as the custodian of the confdb view. A custodian snap can validate the view data being written using [hooks](https://snapcraft.io/docs/reference/development/supported-snap-hooks/) such as `change-view-<plug>`.\
 The other snaps are called "observers" or "readers" of the confdb view. They can use `observe-view-<plug>` hooks to watch changes to the view. This could be useful for the snaps to update their own confdb configuration and/or restart runnning services after configuration changes.\
 A snap can be an observer and/or custodian of many different views.
 
@@ -261,7 +261,7 @@ browser 0.2 installed
 
 ### Interfaces
 
-Next, we'll connect the [interfaces](https://snapcraft.io/docs/confdb-interface) for both snaps.
+Next, we'll connect the [interfaces](https://snapcraft.io/docs/reference/interfaces/confdb-interface/) for both snaps.
 
 ```console
 $ sudo snap connect net-ctrl:network-proxy-admin
@@ -427,11 +427,11 @@ $ sudo curl --unix-socket /run/snapd.socket "http://localhost/v2/changes/2512" -
 }
 ```
 
-The API documentation is available [here](https://snapcraft.io/docs/snapd-api#heading--confdb).
+The API documentation is available [here](https://snapcraft.io/docs/reference/development/snapd-rest-api/#/AuthenticationRequired/setConfdb).
 
 ## Hooks
 
-A [hook](https://snapcraft.io/docs/supported-snap-hooks) is an executable file that runs within a snap's confined environment when a certain action occurs.\
+A [hook](https://snapcraft.io/docs/reference/development/supported-snap-hooks/) is an executable file that runs within a snap's confined environment when a certain action occurs.\
 Snaps can implement hooks to manage and observe confdb views. The hooks are `change-view-<plug>`, `save-view-<plug>`, `load-view-<plug>`, `query-view-<plug>`, & `observe-view-<plug>`. For this demo, we'll look at `change-view-<plug>` and `observe-view-<plug>`.
 
 > [!TIP]
@@ -648,10 +648,10 @@ $ docker logs -f squid-container
 
 ## Further Reading
 
-- [Configure with confdb](https://snapcraft.io/docs/configure-with-confdb)
-- [Confdb configuration mechanism](https://snapcraft.io/docs/confdb-configuration-management)
+- [Configure with confdb](https://snapcraft.io/docs/how-to-guides/manage-snaps/configure-snaps/)
+- [Confdb configuration mechanism](https://snapcraft.io/docs/explanation/how-snaps-work/confdb-configuration-mechanism/)
 - [confdb-schema assertion](https://documentation.ubuntu.com/core/reference/assertions/confdb-schema/)
-- [confdb interface](https://snapcraft.io/docs/confdb-interface)
+- [confdb interface](https://snapcraft.io/docs/reference/interfaces/confdb-interface/)
 - [Ephemeral Data](./docs/ephemeral-data.md)
 - [Confdb APIs](./docs/confdb-apis.md)
 - SD208 Specification: confdb and views (Internal)
