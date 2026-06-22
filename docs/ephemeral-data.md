@@ -68,9 +68,6 @@ See [Creating a confdb-schema Assertion by Hand](../README.md#creating-a-confdb-
 
 This hook reads the current confdb state and writes it back to the external file, ensuring that any changes made through the confdb interface are preserved in the authoritative external source.
 
-> [!IMPORTANT]
-> A `save-view-<plug>` hook must exist for a `load-view-<plug>` hook to work.
-
 Create a `snap/hooks/save-view-network-proxy-admin` file in the net-ctrl snap:
 
 ```python
