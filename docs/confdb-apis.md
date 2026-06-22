@@ -42,7 +42,7 @@ $ surl -a staging https://dashboard.staging.snapcraft.io/api/v2/confdb-schemas |
     {
       "headers": {
         "account-id": "<account-id>",
-        "authority-id": "<account-ids>",
+        "authority-id": "<account-id>",
         "body-length": "92",
         "name": "network",
         "revision": "1",

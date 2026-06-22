@@ -12,17 +12,18 @@ Ephemeral data allows confdb to act as a view or cache of external data. To read
 
 ## Example
 
-For this example, we'll modify the network confdb demo to read proxy configuration from a file in the user's home directory. This simulates a scenario where proxy settings are managed by an external system that writes to `~/network.env`.
+For this example, we'll modify the network confdb demo to read proxy configuration from a file managed by the snap. This simulates a scenario where proxy settings are managed by an external system that writes to `/var/snap/net-ctrl/common/network.env`.
 
 ### Setup
 
-Create a configuration file in your home directory:
+Create a configuration file at the snap's common data directory:
 
 ```console
-$ cat > ~/network.env << 'EOF'
+$ cat > /var/snap/net-ctrl/common/network.env << 'EOF'
 HTTP_PROXY=http://proxy.example.com:8080
 HTTPS_PROXY=http://proxy.example.com:8080
-NO_PROXY=*.company.internal
+FTP_PROXY=ftp://proxy.example.com
+NO_PROXY=*://*.company.internal
 EOF
 ```
 
@@ -30,29 +31,30 @@ EOF
 
 Since the data is now ephemeral, we need to mark the entries as ephemeral in the storage. The `ephemeral: true` flag tells snapd that this data should not be persisted in its internal storage, but instead should be managed through the hooks we'll implement.
 
-```console
-$ snapcraft edit-confdb-schema <your-account-id> network
-[...]
-revision: <N+1>    # Bump this to <N+1>
-[...]
+See [Creating a confdb-schema Assertion by Hand](../README.md#creating-a-confdb-schema-assertion-by-hand) in the README for the full sign-and-ack workflow. The relevant change to the storage body is:
 
+```json
 {
   "storage": {
     [...]
     "schema": {
-      "proxy": {
-        "keys": "$protocol",
-        "values": {
-          "schema": {
-            "bypass": {
-              "type": "array",
-              "unique": true,
-              "values": "string",
-              "ephemeral": true    # New
-            },
-            "url": {    # Changed
-              "type": "string",
-              "ephemeral": true
+      "v1": {
+        "schema": {
+          "proxy": {
+            "keys": "${protocol}",
+            "values": {
+              "schema": {
+                "bypass": {
+                  "type": "array",
+                  "unique": true,
+                  "values": "string",
+                  "ephemeral": true
+                },
+                "url": {
+                  "type": "string",
+                  "ephemeral": true
+                }
+              }
             }
           }
         }
@@ -60,19 +62,6 @@ revision: <N+1>    # Bump this to <N+1>
     }
   }
 }
-```
-
-### Modify the net-ctrl snap
-
-Add home directory access to the net-ctrl snap's `snapcraft.yaml`:
-
-```yaml
-apps:
-  sh:
-    command: /bin/sh
-    plugs:
-      - network-proxy-admin
-      - home    # New
 ```
 
 ### Implement the `save-view-network-proxy-admin` Hook
@@ -92,8 +81,7 @@ import subprocess
 import os
 import sys
 
-# For demo only, otherwise should get user path from env
-config_file = "/home/<user>/network.env"  # TODO: Update <user>
+config_file = os.path.join(os.environ["SNAP_COMMON"], "network.env")
 
 # Get entire view in one call
 result = subprocess.run(
@@ -165,17 +153,9 @@ $ chmod +x net-ctrl/snap/hooks/save-view-network-proxy-admin
 Rebuild and install the modified net-ctrl snap:
 
 ```console
-$ cd net-ctrl
-
 $ snapcraft
-Packed net-ctrl_0.1_amd64.snap
-$ snap install net-ctrl_0.1_amd64.snap --dangerous --devmode
-```
-
-Connect the home interface:
-
-```console
-$ snap connect net-ctrl:home
+Packed net-ctrl_0.2_amd64.snap
+$ snap install net-ctrl_0.2_amd64.snap --dangerous
 ```
 
 Change the `https` proxy URL with `snap set`:
@@ -183,13 +163,14 @@ Change the `https` proxy URL with `snap set`:
 ```console
 $ snap set <your-account-id>/network/proxy-admin 'https.url="http://localhost:3199/"'
 
-$ cat ~/network.env
+$ cat /var/snap/net-ctrl/common/network.env
 HTTP_PROXY=http://proxy.example.com:8080
 HTTPS_PROXY=http://localhost:3199/
+FTP_PROXY=ftp://proxy.example.com
 NO_PROXY=*://*.company.internal
 ```
 
-When you set the confdb value, snapd automatically triggered the `save-view-network-proxy-admin` hook. The hook read the current confdb state and updated the external file, changing only the `HTTPS_PROXY` line while preserving the existing HTTP_PROXY and NO_PROXY values.
+When you set the confdb value, snapd automatically triggered the `save-view-network-proxy-admin` hook. The hook read the current confdb state and updated the file, changing only the `HTTPS_PROXY` line while preserving the existing values.
 
 ### Implement the `load-view-network-proxy-admin` Hook
 
@@ -205,8 +186,7 @@ import os
 import subprocess
 import sys
 
-# For demo only, otherwise should get user path from env
-config_file = "/home/<user>/network.env"  # TODO: Update <user>
+config_file = os.path.join(os.environ["SNAP_COMMON"], "network.env")
 
 if not os.path.exists(config_file):
     print(f"Config file {config_file} not found")
@@ -258,8 +238,8 @@ Rebuild and install the modified net-ctrl snap:
 
 ```console
 $ snapcraft
-Packed net-ctrl_0.1_amd64.snap
-$ snap install net-ctrl_0.1_amd64.snap --dangerous --devmode
+Packed net-ctrl_0.2_amd64.snap
+$ snap install net-ctrl_0.2_amd64.snap --dangerous
 ```
 
 Get the updated proxy config with `snap get`:
@@ -278,11 +258,17 @@ $ snap get <your-account-id>/network/proxy-admin -d
             "*://*.company.internal"
         ],
         "url": "http://localhost:3199/"
+    },
+    "ftp": {
+        "bypass": [
+            "*://*.company.internal"
+        ],
+        "url": "ftp://proxy.example.com"
     }
 }
 ```
 
-When you get the confdb view, snapd automatically called the `load-view-network-proxy-admin` hook to populate the confdb view. It read from `~/network.env`, parsed the proxy settings, and populated the confdb view with the external configuration.
+When you get the confdb view, snapd automatically called the `load-view-network-proxy-admin` hook to populate the confdb view. It read from `/var/snap/net-ctrl/common/network.env`, parsed the proxy settings, and populated the confdb view with the external configuration.
 
 🎉 **Congratulations!** You've successfully integrated external configuration sources with confdb.
 

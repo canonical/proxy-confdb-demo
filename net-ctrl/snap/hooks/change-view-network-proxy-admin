@@ -6,22 +6,20 @@ import subprocess
 import validators
 
 
-cmd = f"snapctl get --view :network-proxy-admin -d"
+cmd = "snapctl get --view :network-proxy-admin -d"
 proc = subprocess.run(cmd.split(), capture_output=True, text=True)
 if proc.returncode != 0:
-    cmd = f"snapctl fail {proc.stderr}"
-    subprocess.run(cmd.split())
+    subprocess.run(["snapctl", "fail", proc.stderr])
     exit(1)
 
-config = json.loads(proc.stdout)
+config = json.loads(proc.stdout) if proc.stdout.strip() else {}
 
 for protocol, proxy_config in config.items():
     # check that the URL format is valid
     url = proxy_config.get("url")
     if url and not validators.url(url, simple_host=True):
         err = f"failed to validate url: {url}"
-        cmd = f"snapctl fail {err}"
-        subprocess.run(cmd.split())
+        subprocess.run(["snapctl", "fail", err])
         print(err)
         exit(1)
 

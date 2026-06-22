@@ -91,20 +91,20 @@ views:
             request: bypass
             storage: bypass
         request: {protocol}
-        storage: proxy.{protocol}
+        storage: v1.proxy.{protocol}
   proxy-state:
     rules:
       -
         access: read
         request: https
-        storage: proxy.https
+        storage: v1.proxy.https
       -
         access: read
         request: ftp
-        storage: proxy.ftp
+        storage: v1.proxy.ftp
 ```
 
-Each view has a set of rules that hold the `request` path, the underlying `storage`, and the `access` method. You can use placeholders in the `request` and `storage`. In the example above, `{protocol}` is a placeholder which maps to `proxy.{protocol}`. For instance, `https` maps to `proxy.https`.
+Each view has a set of rules that hold the `request` path, the underlying `storage`, and the `access` method. You can use placeholders in the `request` and `storage`. In the example above, `{protocol}` is a placeholder which maps to `v1.proxy.{protocol}`. For instance, `https` maps to `v1.proxy.https`.
 
 The stored configuration respects the following schema:
 
@@ -122,16 +122,20 @@ The stored configuration respects the following schema:
       }
     },
     "schema": {
-      "proxy": {
-        "keys": "${protocol}",
-        "values": {
-          "schema": {
-            "bypass": {
-              "type": "array",
-              "unique": true,
-              "values": "string"
-            },
-            "url": "string"
+      "v1": {
+        "schema": {
+          "proxy": {
+            "keys": "${protocol}",
+            "values": {
+              "schema": {
+                "bypass": {
+                  "type": "array",
+                  "unique": true,
+                  "values": "string"
+                },
+                "url": "string"
+              }
+            }
           }
         }
       }

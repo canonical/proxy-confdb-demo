@@ -3,14 +3,14 @@
   "authority-id": "f22PSauKuNkwQTM9Wz67ZCjNACuSjjhN",
   "account-id": "f22PSauKuNkwQTM9Wz67ZCjNACuSjjhN",
   "name": "network",
-  "revision": "1",
-  "timestamp": "2026-01-21T10:19:23+00:00",
+  "revision": "4",
+  "timestamp": "2026-06-22T10:44:02+00:00",
   "views": {
     "proxy-admin": {
       "rules": [
         {
           "request": "{protocol}",
-          "storage": "proxy.{protocol}",
+          "storage": "v1.proxy.{protocol}",
           "access": "read-write",
           "content": [
             {
@@ -29,16 +29,16 @@
       "rules": [
         {
           "request": "https",
-          "storage": "proxy.https",
+          "storage": "v1.proxy.https",
           "access": "read"
         },
         {
           "request": "ftp",
-          "storage": "proxy.ftp",
+          "storage": "v1.proxy.ftp",
           "access": "read"
         }
       ]
     }
   },
-  "body": "{\n  \"storage\": {\n    \"aliases\": {\n      \"protocol\": {\n        \"choices\": [\n          \"http\",\n          \"https\",\n          \"ftp\"\n        ],\n        \"type\": \"string\"\n      }\n    },\n    \"schema\": {\n      \"proxy\": {\n        \"keys\": \"${protocol}\",\n        \"values\": {\n          \"schema\": {\n            \"bypass\": {\n              \"type\": \"array\",\n              \"unique\": true,\n              \"values\": \"string\"\n            },\n            \"url\": \"string\"\n          }\n        }\n      }\n    }\n  }\n}"
+  "body": "{\n  \"storage\": {\n    \"aliases\": {\n      \"protocol\": {\n        \"choices\": [\n          \"http\",\n          \"https\",\n          \"ftp\"\n        ],\n        \"type\": \"string\"\n      }\n    },\n    \"schema\": {\n      \"v1\": {\n        \"schema\": {\n          \"proxy\": {\n            \"keys\": \"${protocol}\",\n            \"values\": {\n              \"schema\": {\n                \"bypass\": {\n                  \"type\": \"array\",\n                  \"unique\": true,\n                  \"values\": \"string\"\n                },\n                \"url\": \"string\"\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n}"
 }

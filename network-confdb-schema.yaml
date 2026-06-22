@@ -3,14 +3,14 @@ type: confdb-schema
 authority-id: <your-account-id>
 account-id: <your-account-id>
 name: network
-revision: "1"  # Bump the revision number after updating the assertion
+revision: "4"  # Bump the revision number after updating the assertion
 # Update the timestamp when modifying the assertion (run: date -Iseconds --utc)
 timestamp: <timestamp>
 views:
   proxy-admin:
     rules:
       - request: "{protocol}"
-        storage: "proxy.{protocol}"
+        storage: "v1.proxy.{protocol}"
         access: read-write
         content:
           - request: url
@@ -20,10 +20,10 @@ views:
   proxy-state:
     rules:
       - request: https
-        storage: proxy.https
+        storage: v1.proxy.https
         access: read
       - request: ftp
-        storage: proxy.ftp
+        storage: v1.proxy.ftp
         access: read
 # The body is the storage schema as a JSON string
 body: |-
@@ -40,16 +40,20 @@ body: |-
         }
       },
       "schema": {
-        "proxy": {
-          "keys": "${protocol}",
-          "values": {
-            "schema": {
-              "bypass": {
-                "type": "array",
-                "unique": true,
-                "values": "string"
-              },
-              "url": "string"
+        "v1": {
+          "schema": {
+            "proxy": {
+              "keys": "${protocol}",
+              "values": {
+                "schema": {
+                  "bypass": {
+                    "type": "array",
+                    "unique": true,
+                    "values": "string"
+                  },
+                  "url": "string"
+                }
+              }
             }
           }
         }
