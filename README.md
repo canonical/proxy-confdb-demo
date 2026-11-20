@@ -455,8 +455,8 @@ $ snap tasks 2494
 Status  Spawn               Ready               Summary
 Done    today at 11:20 EAT  today at 11:20 EAT  Clears the ongoing confdb transaction from state (on error)
 Done    today at 11:20 EAT  today at 11:20 EAT  Run hook change-view-network-proxy-admin of snap "net-ctrl"
-Done    today at 11:20 EAT  today at 11:20 EAT  Run hook observe-view-network-proxy-state of snap "browser"
 Done    today at 11:20 EAT  today at 11:20 EAT  Commit changes to confdb (<your-account-id>/network/proxy-admin)
+Done    today at 11:20 EAT  today at 11:20 EAT  Run hook observe-view-network-proxy-state of snap "browser"
 Done    today at 11:20 EAT  today at 11:20 EAT  Clears the ongoing confdb transaction from state
 
 $ cat /var/snap/browser/common/new-config.json
@@ -494,8 +494,8 @@ $ snap tasks 2495
 Status  Spawn               Ready               Summary
 Undone  today at 11:21 EAT  today at 11:21 EAT  Clears the ongoing confdb transaction from state (on error)
 Error   today at 11:21 EAT  today at 11:21 EAT  Run hook change-view-network-proxy-admin of snap "net-ctrl"
-Hold    today at 11:21 EAT  today at 11:21 EAT  Run hook observe-view-network-proxy-state of snap "browser"
 Hold    today at 11:21 EAT  today at 11:21 EAT  Commit changes to confdb (<your-account-id>/network/proxy-admin)
+Hold    today at 11:21 EAT  today at 11:21 EAT  Run hook observe-view-network-proxy-state of snap "browser"
 Hold    today at 11:21 EAT  today at 11:21 EAT  Clears the ongoing confdb transaction from state
 
 ......................................................................
