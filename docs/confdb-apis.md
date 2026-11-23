@@ -70,7 +70,7 @@ $ surl -a staging https://dashboard.staging.snapcraft.io/api/v2/confdb-schemas |
 To fetch the full signed assertion, run:
 
 ```console
-$ curl --silent --header "Accept: application/x.ubuntu.assertion" https://assertions.staging.ubuntu.com/v1/assertions/confdb-schemas/<account-id>/<confdb-schema>
+$ curl --silent --header "Accept: application/x.ubuntu.assertion" https://assertions.staging.ubuntu.com/v1/assertions/confdb-schema/<account-id>/<confdb-schema>
 type: confdb-schema
 authority-id: 10ptdA3uXGo7P7DCvMk9wSgKnHiYKEV0
 revision: 1
